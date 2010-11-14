@@ -1,0 +1,42 @@
+#!/usr/bin/python2
+# Copyright 2010 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+"""Creates a tarball containing V8 sources based on an SVN tag."""
+
+import optparse
+import os.path
+import pysvn
+import shutil
+import tarfile
+import tempfile
+
+parser = optparse.OptionParser(usage="%prog <v8-version>")
+(options, args) = parser.parse_args()
+if len(args) != 1:
+	parser.error("Exactly one argument required: <v8-version>")
+
+target_name = 'v8-%s' % args[0]
+
+tmpdir = tempfile.mkdtemp()
+
+try:
+	checkout_dir = os.path.join(tmpdir, target_name)
+	os.makedirs(checkout_dir)
+
+	checkout_url = 'http://v8.googlecode.com/svn/tags/%s' % args[0]
+
+	svn_client = pysvn.Client()
+	svn_client.checkout(checkout_url, checkout_dir)
+
+	archive_name = '%s.tar.gz' % target_name
+	try:
+		archive = tarfile.open(archive_name, 'w:gz')
+		archive.add(checkout_dir, target_name, exclude=(lambda x: '.svn' in x))
+	except:
+		os.remove(archive_name)
+		raise
+	finally:
+		archive.close()
+finally:
+	shutil.rmtree(tmpdir)
