@@ -44,7 +44,7 @@ class my_install_scripts(install_scripts):
 setup(
 	name="chromium-tools",
 	version=get_version(),
-	scripts=["chromium-depot-tool", "v8-create-tarball"],
+	scripts=["chromium-depot-tool", "v8-create-tarball", "v8-extract-version"],
 	cmdclass={
 		'sdist': my_sdist,
 		'install_scripts': my_install_scripts,
