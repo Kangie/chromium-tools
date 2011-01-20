@@ -11,6 +11,8 @@ import shutil
 import tarfile
 import tempfile
 
+import chromium_tools
+
 parser = optparse.OptionParser(usage="%prog <v8-version>")
 (options, args) = parser.parse_args()
 if len(args) != 1:
@@ -29,6 +31,13 @@ try:
 	svn_client = pysvn.Client()
 	svn_client.checkout(checkout_url, checkout_dir)
 
+	version_contents = open(os.path.join(checkout_dir, 'src', 'version.cc')).read()
+	actual_version = chromium_tools.v8_extract_version(version_contents)
+	if actual_version != args[0]:
+		print 'Version info inside version.cc does not match!'
+		print 'Expected %s, got %s. Exiting' % (args[0], actual_version)
+		sys.exit(1)
+
 	archive_name = '%s.tar.gz' % target_name
 	try:
 		archive = tarfile.open(archive_name, 'w:gz')
@@ -40,3 +49,4 @@ try:
 		archive.close()
 finally:
 	shutil.rmtree(tmpdir)
+	pass

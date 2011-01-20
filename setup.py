@@ -74,6 +74,7 @@ if enable_subversion:
 setup(
 	name="chromium-tools",
 	version=get_version(),
+	py_modules=["chromium_tools"],
 	scripts=scripts,
 	cmdclass=cmdclass,
 	script_args=args
