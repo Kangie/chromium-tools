@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from distutils.command.install_scripts import install_scripts
+from distutils.command.install_data import install_data
 from distutils.command.sdist import sdist
 from distutils.core import setup
 from distutils.errors import *
@@ -46,21 +47,16 @@ class my_sdist(sdist):
 		sdist.make_release_tree(self, base_dir, files)
 		open(os.path.join(base_dir, 'VERSION'), 'w').write(get_version_from_git())
 
-class my_install_scripts(install_scripts):
-	def __symlink(self, src, dst):
-		dest_name, _ = self.copy_file(
-			src,
-			os.path.join(self.install_dir, dst),
-			link='sym')
-		self.outfiles.append(dest_name)
-
+class my_install_data(install_data):
 	def run(self):
-		install_scripts.run(self)
-		self.__symlink('chromium-depot-tool', 'drover')
-		self.__symlink('chromium-depot-tool', 'gcl')
-		self.__symlink('chromium-depot-tool', 'gclient')
+		install_data.run(self)
+		for tool in ['drover', 'gcl', 'gclient']:
+			os.symlink(
+				os.path.join('..', 'libexec', 'chromium-depot-tool'),
+				os.path.join(self.install_dir, 'bin', tool))
 
-scripts = ["v8-extract-version"]
+scripts = ["scripts/v8-extract-version"]
+data_files = []
 
 cmdclass = {'sdist': my_sdist}
 
@@ -68,14 +64,16 @@ args = sys.argv[1:]
 
 enable_subversion = get_option(args, 'subversion', default=True)
 if enable_subversion:
-	scripts += ["chromium-depot-tool", "v8-create-tarball"]
-	cmdclass['install_scripts'] = my_install_scripts
+	scripts += ["scripts/v8-create-tarball"]
+	data_files += [["libexec", ["scripts/chromium-depot-tool"]]]
+	cmdclass['install_data'] = my_install_data
 
 setup(
 	name="chromium-tools",
 	version=get_version(),
 	py_modules=["chromium_tools"],
 	scripts=scripts,
+	data_files=data_files,
 	cmdclass=cmdclass,
 	script_args=args
 )

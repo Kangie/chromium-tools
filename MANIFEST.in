@@ -1,0 +1,4 @@
+global-include *.py
+global-exclude *.pyc *.pyo
+graft scripts
+include LICENSE
