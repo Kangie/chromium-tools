@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-# Copyright 2010 Gentoo Foundation
+# Copyright 2011 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 """Creates a tarball containing V8 sources based on an SVN tag."""
@@ -7,11 +7,35 @@
 import optparse
 import os.path
 import pysvn
+import re
 import shutil
 import tarfile
 import tempfile
 
-import chromium_tools
+_V8_MAJOR_VERSION_PATTERN = re.compile(r"#define\s+MAJOR_VERSION\s+(.*)")
+_V8_MINOR_VERSION_PATTERN = re.compile(r"#define\s+MINOR_VERSION\s+(.*)")
+_V8_BUILD_NUMBER_PATTERN = re.compile(r"#define\s+BUILD_NUMBER\s+(.*)")
+_V8_PATCH_LEVEL_PATTERN = re.compile(r"#define\s+PATCH_LEVEL\s+(.*)")
+
+_V8_PATTERNS = [
+	_V8_MAJOR_VERSION_PATTERN,
+	_V8_MINOR_VERSION_PATTERN,
+	_V8_BUILD_NUMBER_PATTERN,
+	_V8_PATCH_LEVEL_PATTERN]
+
+def v8_extract_version(version_contents):
+	"""
+	Returns version number as string based on the string
+	contents of version.cc file.
+	"""
+	version_components = []
+	for pattern in _V8_PATTERNS:
+	  version_components.append(pattern.search(version_contents).group(1).strip())
+
+	if version_components[len(version_components) - 1] == '0':
+	  version_components.pop()
+
+	return '.'.join(version_components)
 
 parser = optparse.OptionParser(usage="%prog <v8-version>")
 (options, args) = parser.parse_args()
@@ -32,7 +56,7 @@ try:
 	svn_client.checkout(checkout_url, checkout_dir)
 
 	version_contents = open(os.path.join(checkout_dir, 'src', 'version.cc')).read()
-	actual_version = chromium_tools.v8_extract_version(version_contents)
+	actual_version = v8_extract_version(version_contents)
 	if actual_version != args[0]:
 		print 'Version info inside version.cc does not match!'
 		print 'Expected %s, got %s. Exiting' % (args[0], actual_version)
