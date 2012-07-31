@@ -1,16 +1,20 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import re
 import sys
-import urllib2
-
+try:
+  from urllib.request import urlopen
+except ImportError:
+  from urllib2 import urlopen
 
 CVE_PATTERN = re.compile('CVE-(\d{4})-(\d+)')
 
 
 def main(argv):
-  response = urllib2.urlopen(argv[0])
-  cves = CVE_PATTERN.findall(response.read())
+  response = urlopen(argv[0])
+  cves = CVE_PATTERN.findall(str(response.read()))
   years = {}
   for year, no in cves:
     if year not in years:
@@ -23,7 +27,7 @@ def main(argv):
       result.append('CVE-%s-%s' % (year, nos[0]))
     else:
       result.append('CVE-%s-{%s}' % (year, ','.join(sorted(nos))))
-  print ' '.join(result)
+  print(' '.join(result))
   return 0
 
 
