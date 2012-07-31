@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Dependencies:
+# dev-lang/python[sqlite]
+# sys-apps/file[python]
+
 import os.path
 
 import magic
