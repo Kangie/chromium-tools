@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import argparse
+from contextlib import closing
+from debian import deb822
+from glob import glob
+import os
+import os.path
+import portage
+import shutil
+import subprocess
+import sys
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
+
+ARCHIVE = 'https://dl.google.com/linux/chrome/deb'
+DIST = 'stable'
+COMP = 'main'
+ARCH = 'amd64'
+
+PORTDIR = portage.settings.repositories['gentoo'].location
+
+PKGMAP = {
+    'www-client/google-chrome': {
+        '*.ebuild': ('_p', 'google-chrome-stable'),
+    },
+    'www-client/google-chrome-beta': {
+        '*.ebuild': ('_p', 'google-chrome-beta'),
+    },
+    'www-client/google-chrome-unstable': {
+        '*.ebuild': ('_p', 'google-chrome-unstable'),
+    },
+    'www-plugins/chrome-binary-plugins': {
+        '*_p*.ebuild': ('_p', 'google-chrome-stable'),
+        '*_beta*.ebuild': ('_beta', 'google-chrome-beta'),
+        '*_alpha*.ebuild': ('_alpha', 'google-chrome-unstable'),
+    },
+}
+
+ARGS = None
+
+def get_deb_release(archive, dist):
+    url = '%s/dists/%s/Release' % (archive, dist)
+    with closing(urlopen(url)) as fp:
+        return deb822.Release(fp)
+
+def get_deb_packages(archive, dist, comp, arch):
+    url = '%s/dists/%s/%s/binary-%s/Packages' % (archive, dist, comp, arch)
+    with closing(urlopen(url)) as fp:
+        return list(deb822.Packages.iter_paragraphs(fp))
+
+def ebuild_pvr(pn, ebuild):
+    return ebuild[len(pn) + 1 : -7]
+
+def ebuild_pv(pn, ebuild):
+    return ebuild_pvr(pn, ebuild).split('-r')[0]
+
+def ebuild_version(pn, ebuild):
+    return ebuild_pv(pn, ebuild).split('_')[0]
+
+def new_ebuild(pn, version, sep, revision):
+    return pn + '-' + version + sep + revision + '.ebuild'
+
+def copy_ebuild(src, dest):
+    print('cp ' + src + ' ' + dest)
+    if not ARGS.dry_run:
+        shutil.copyfile(src, dest)
+    print('git add ' + dest)
+    if not ARGS.dry_run:
+        subprocess.check_call(['git', 'add', dest])
+
+def remove_ebuild(ebuild):
+    print('git rm ' + ebuild)
+    if not ARGS.dry_run:
+        subprocess.check_call(['git', 'rm',  ebuild])
+
+def sync_ebuilds(pkg, debs):
+    os.chdir(os.path.join(PORTDIR, pkg))
+    pn = pkg.split('/')[1]
+    changed = False
+
+    for pattern in PKGMAP[pkg]:
+        (sep, name) = PKGMAP[pkg][pattern]
+        ebuilds = sorted(glob(pattern), reverse=True)
+
+        for deb in debs:
+            if deb['Package'] != name:
+                continue
+
+            (version, revision) = deb['Version'].split('-')
+            found = False
+            for ebuild in ebuilds:
+                if version == ebuild_version(pn, ebuild):
+                    found = True
+                    break
+            if not found:
+                copy_ebuild(ebuilds[0], new_ebuild(pn, version, sep, revision))
+                changed = True
+
+        for ebuild in ebuilds:
+            found = False
+            for deb in debs:
+                if deb['Package'] != name:
+                    continue
+
+                (version, revision) = deb['Version'].split('-')
+                if version == ebuild_version(pn, ebuild):
+                    found = True
+                    break
+            if not found:
+                remove_ebuild(ebuild)
+                changed = True
+
+    if changed:
+        if ARGS.commit:
+            print('repoman commit')
+            if not ARGS.dry_run:
+                subprocess.check_call(['repoman', 'commit', '-S', '-m', pkg + ': automated update'])
+        else:
+            print('repoman manifest')
+            if not ARGS.dry_run:
+                subprocess.check_call(['repoman', 'manifest'])
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--commit', '-c', action='store_true')
+    parser.add_argument('--dry-run', '-n', action='store_true')
+    global ARGS
+    ARGS = parser.parse_args()
+
+    debs = get_deb_packages(ARCHIVE, DIST, COMP, ARCH)
+    for pkg in PKGMAP:
+        sync_ebuilds(pkg, debs)
+
+if __name__ == '__main__':
+    main()
