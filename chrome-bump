@@ -26,16 +26,16 @@ PORTDIR = portage.settings.repositories['gentoo'].location
 
 PKGMAP = {
     'www-client/google-chrome': {
-        '*.ebuild': ('_p', 'google-chrome-stable'),
+        '*.ebuild': ('', 'google-chrome-stable'),
     },
     'www-client/google-chrome-beta': {
-        '*.ebuild': ('_p', 'google-chrome-beta'),
+        '*.ebuild': ('', 'google-chrome-beta'),
     },
     'www-client/google-chrome-unstable': {
-        '*.ebuild': ('_p', 'google-chrome-unstable'),
+        '*.ebuild': ('', 'google-chrome-unstable'),
     },
     'www-plugins/chrome-binary-plugins': {
-        '*_p*.ebuild': ('_p', 'google-chrome-stable'),
+        '*[0123456789].ebuild': ('', 'google-chrome-stable'),
         '*_beta*.ebuild': ('_beta', 'google-chrome-beta'),
         '*_alpha*.ebuild': ('_alpha', 'google-chrome-unstable'),
     },
@@ -98,7 +98,7 @@ def sync_ebuilds(pkg, debs):
                     found = True
                     break
             if not found:
-                copy_ebuild(ebuilds[0], new_ebuild(pn, version, sep, revision))
+                copy_ebuild(ebuilds[0], new_ebuild(pn, version, sep, ''))
                 changed = True
 
         for ebuild in ebuilds:
