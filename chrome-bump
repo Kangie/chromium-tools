@@ -51,7 +51,7 @@ def get_deb_release(archive, dist):
 def get_deb_packages(archive, dist, comp, arch):
     url = '%s/dists/%s/%s/binary-%s/Packages' % (archive, dist, comp, arch)
     with closing(urlopen(url)) as fp:
-        return list(deb822.Packages.iter_paragraphs(fp))
+        return list(deb822.Packages.iter_paragraphs(fp, use_apt_pkg=False))
 
 def ebuild_pvr(pn, ebuild):
     return ebuild[len(pn) + 1 : -7]
@@ -82,10 +82,14 @@ def sync_ebuilds(pkg, debs):
     os.chdir(os.path.join(PORTDIR, pkg))
     pn = pkg.split('/')[1]
     changed = False
+    new_versions = []
 
     for pattern in PKGMAP[pkg]:
         (sep, name) = PKGMAP[pkg][pattern]
         ebuilds = sorted(glob(pattern), reverse=True)
+
+        if not ebuilds:
+            continue
 
         for deb in debs:
             if deb['Package'] != name:
@@ -99,6 +103,7 @@ def sync_ebuilds(pkg, debs):
                     break
             if not found:
                 copy_ebuild(ebuilds[0], new_ebuild(pn, version, sep, ''))
+                new_versions.append(version)
                 changed = True
 
         for ebuild in ebuilds:
@@ -119,7 +124,10 @@ def sync_ebuilds(pkg, debs):
         if ARGS.commit:
             print('repoman commit')
             if not ARGS.dry_run:
-                subprocess.check_call(['repoman', 'commit', '-S', '-m', pkg + ': automated update'])
+                message = '%s: automated update (%s)' % (pkg, ', '.join(new_versions))
+                if len(message) > 69:
+                    message = '%s: automated update' % pkg
+                subprocess.check_call(['repoman', 'commit', '-S', '-m', message])
         else:
             print('repoman manifest')
             if not ARGS.dry_run:
