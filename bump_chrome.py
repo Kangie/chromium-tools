@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 import urllib.request
+import subprocess
 
 from portage.dbapi.porttree import portdbapi
 from portage.versions import *
@@ -25,7 +26,7 @@ pkg_data = \
             "suffix"  : None,
             "version" : None,
             "bump"    : False,
-            "stable"  : False
+            "stable"  : True
         },
         "beta"   :
         {
@@ -102,9 +103,13 @@ def getPrevChannel(channel):
             return channel_list[i + 1]
     raise ValueError(f"Unknown channel \"{channel}\".")
 
+def getEbuildVersion(version):
+    if version[1] == "r0":
+        return version[0]
+    return f"{version[0]}-{version[1]}"
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--commit', '-c', action='store_true')
     parser.add_argument('--dry-run', '-n', action='store_true')
     args = parser.parse_args()
 
@@ -134,13 +139,14 @@ def main():
             pkg_data[category][channel]["version"] = None
             for cpv in cpvs:
                 (cp, version, rev) = pkgsplit(mypkg=cpv)
-                suffix = pkg_data[category][channel]['suffix']
+                suffix = pkg_data[category][channel]["suffix"]
                 if suffix is not None:
                     suffix = "_" + suffix
                     if version.endswith(suffix):
-                        pkg_data[category][channel]["version"] = version[:-len(suffix)]
+                        pkg_data[category][channel]["version"] = (version[:-len(suffix)],
+                                                                  rev)
                 elif not "_" in version:
-                    pkg_data[category][channel]["version"] = version
+                    pkg_data[category][channel]["version"] = (version, rev)
             if pkg_data[category][channel]["version"] is None:
                 output.ewarn("Couldn't determine tree version for "+
                              "{category}/{pkg}")
@@ -154,7 +160,7 @@ def main():
             for category in pkg_data.keys():
                 pkg_data[category][channel]["bump"] = False
                 ver_info = vercmp(chrome_info[channel],
-                                  pkg_data[category][channel]["version"])
+                                  pkg_data[category][channel]["version"][0])
                 if ver_info is None:
                     output.ewarn("Cannot determine new version for " +
                                  f"channel \"{channel}\" of " +
@@ -174,23 +180,26 @@ def main():
             output.einfo(f"{category}/{pkg} version information:")
             need_bump = pkg_data[category][channel]["bump"]
             uversion  = chrome_info[channel]
-            tversion  = pkg_data[category][channel]["version"]
+            tversion  = getEbuildVersion(pkg_data[category][channel]["version"])
             output.einfo(f"\t{channel}\t{tversion}\t{uversion}" +
                          f"\t==> {'bump' if need_bump else 'no bump'}")
 
-    repo = Repo(repo_path)
-    if repo.is_dirty():
-        output.eerror("Git Repository is dirty, can't continue.")
-        sys.exit(1)
+    if not args.dry_run:
+        repo = Repo(repo_path)
+        if repo.is_dirty():
+            output.eerror("Git Repository is dirty, can't continue.")
+            sys.exit(1)
 
-    index = repo.index
+        index = repo.index
+
     for channel in channels:
         for category in pkg_data.keys():
             if not pkg_data[category][channel]["bump"]:
                 continue
             uversion   = chrome_info[channel]
-            tversion   = pkg_data[category][channel]["version"]
-            major_bump = isMajorBump(uversion=uversion, tversion=tversion)
+            tversion   = getEbuildVersion(pkg_data[category][channel]["version"])
+            major_bump = isMajorBump(uversion=uversion,
+                                     tversion=pkg_data[category][channel]["version"][0])
             pkg        = pkg_data[category][channel]["pkg"]
             suffix     = pkg_data[category][channel]["suffix"]
             if suffix is not None:
@@ -201,58 +210,82 @@ def main():
             if major_bump:
                 prev_channel = getPrevChannel(channel=channel)
                 prev_pkg     = pkg_data[category][prev_channel]["pkg"]
-                prev_version = pkg_data[category][prev_channel]["version"]
+                prev_version = getEbuildVersion(pkg_data[category][prev_channel]["version"])
                 prev_suffix  = pkg_data[category][prev_channel]["suffix"]
-                print(prev_pkg)
                 if prev_suffix is not None:
                     prev_suffix = "_" + prev_suffix
                 else:
                     prev_suffix = ""
-                from_ebuild = os.path.join(repo_path,
-                                           category,
+                from_ebuild = os.path.join(category,
                                            prev_pkg,
                                            prev_pkg + "-" +
                                            prev_version + prev_suffix +
                                            ".ebuild")
             else:
-                from_ebuild = os.path.join(repo_path,
-                                           category,
+                from_ebuild = os.path.join(category,
                                            pkg,
                                            pkg + "-" +
                                            tversion + suffix +
                                            ".ebuild")
-            to_ebuild = os.path.join(repo_path,
-                                     category,
+            to_ebuild = os.path.join(category,
                                      pkg,
                                      pkg + "-" +
                                      uversion + suffix +
                                      ".ebuild")
 
-            shutil.copyfile(from_ebuild, to_ebuild)
+            if args.dry_run:
+                print(f"cp {from_ebuild} {to_ebuild}")
+                if not major_bump:
+                    print(f"git rm {from_ebuild}")
+            else:
+                from_ebuild = os.path.join(repo_path, from_ebuild)
+                shutil.copyfile(from_ebuild,
+                                os.path.join(repo_path, to_ebuild))
+                if not major_bump:
+                    index.remove(from_ebuild, working_tree=True)
 
-            index.add(to_ebuild)
             if major_bump:
-                old_ebuild = os.path.join(repo_path,
-                                          category,
+                old_ebuild = os.path.join(category,
                                           pkg,
                                           pkg + "-" +
                                           tversion + suffix +
                                           ".ebuild")
-                index.remove(old_ebuild, working_tree=True)
+                if args.dry_run:
+                    print(f"git rm {old_ebuild}")
+                else:
+                    index.remove(os.path.join(repo_path, old_ebuild),
+                                 working_tree=True)
+                if pkg_data[category][channel]["stable"]:
+                    if args.dry_run:
+                        print(f"ekeyword amd64 {to_ebuild}")
+                    else:
+                        subprocess.run(["ekeyword", "amd64",
+                                        os.path.join(repo_path, to_ebuild)])
+
+            if args.dry_run:
+                print(f"git add {to_ebuild}")
             else:
-                index.remove(from_ebuild, working_tree=True)
+                to_ebuild = os.path.join(repo_path, to_ebuild)
+                index.add(to_ebuild)
 
             to_path = os.path.dirname(to_ebuild)
             cfg = config.config()
             cfg["O"] = to_path
 
-            digestgen.digestgen(None, cfg, db)
+            if args.dry_run:
+                print(f"git add {os.path.join(to_path, 'Manifest')}")
+                print("git commit -m",
+                      f"\"{category}/{pkg}: automated update",
+                      f"({uversion}{suffix})",
+                      "-s -S\"")
+            else:
+                digestgen.digestgen(None, cfg, db)
 
-            index.add(os.path.join(to_path, "Manifest"))
+                index.add(os.path.join(to_path, "Manifest"))
 
-            repo.git.commit("-m",
-                            f"{category}/{pkg}: automated update ({uversion})",
-                            "-s", "-S")
+                repo.git.commit("-m",
+                                f"{category}/{pkg}: automated update ({uversion}{suffix})",
+                                "-s", "-S")
 
 if __name__ == "__main__":
     main()
