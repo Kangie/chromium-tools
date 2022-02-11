@@ -77,10 +77,11 @@ def getEdgeChannelVersions(versions, channel):
     v.sort(key=functools.cmp_to_key(compareEdgeVersion))
     return v
 
-def isMajorBump(uversion, tversion):
+def isMajorBump(channel, uversion, tversion):
     uv_list = uversion.split(".")
     tv_list = tversion.split(".")
-    if int(uv_list[0]) > int(tv_list[0]):
+    if ( int(uv_list[0]) > int(tv_list[0]) and
+         getPrevChannel(channel=channel) != channel ):
         return True
     return False
 
@@ -227,7 +228,9 @@ def main():
         tversion = getEbuildVersion(tver)
         for uver in pkg_data[channel]["bversion"]:
             uversion   = getEbuildVersion(uver)
-            major_bump = isMajorBump(uversion=uver[0], tversion=tver[0])
+            major_bump = isMajorBump(channel=channel,
+                                     uversion=uver[0],
+                                     tversion=tver[0])
             output.einfo(f"Bumping www-client/{pkg}-{uversion} ...")
             if major_bump:
                 prev_channel = getPrevChannel(channel=channel)
@@ -239,6 +242,12 @@ def main():
                                            prev_pkg + "-" +
                                            prev_version +
                                            ".ebuild")
+                from_meta = os.path.join("www-client",
+                                         prev_pkg,
+                                         "metadata.xml")
+                to_meta = os.path.join("www-client",
+                                       pkg,
+                                       "metadata.xml")
             else:
                 from_ebuild = os.path.join("www-client",
                                            pkg,
@@ -256,6 +265,9 @@ def main():
                 if pkg_data[channel]["stable"]:
                     print(f"ekeyword ~amd64 {to_ebuild}")
                 print(f"git add {to_ebuild}")
+                if major_bump:
+                    print(f"cp {from_meta} {to_meta}")
+                    print(f"git add {to_meta}")
             else:
                 to_ebuild   = os.path.join(repo_path, to_ebuild)
                 from_ebuild = os.path.join(repo_path, from_ebuild)
@@ -263,6 +275,11 @@ def main():
                 if pkg_data[channel]["stable"]:
                     subprocess.check_call(["ekeyword", "~amd64", to_ebuild])
                 index.add(to_ebuild)
+                if major_bump:
+                    to_meta   = os.path.join(repo_path, to_meta)
+                    from_meta = os.path.join(repo_path, from_meta)
+                    shutil.copyfile(from_meta, to_meta)
+                    index.add(to_meta)
 
             if args.dry_run:
                 print(f"git add {os.path.join('www-client', pkg, 'Manifest')}")
