@@ -1,0 +1,397 @@
+#!/bin/env python3
+
+import argparse
+import json
+import os
+import shutil
+import sys
+import urllib.request
+import subprocess
+import functools
+import operator
+
+from bs4 import BeautifulSoup
+from debian import deb822
+from contextlib import closing
+
+from portage.dbapi.porttree import portdbapi
+from portage.versions import *
+from portage.package.ebuild import digestgen, config
+from portage.output import EOutput
+
+from git import Repo
+
+pkg_data = \
+{
+    "stable" :
+    {
+        "pkg"      : "opera",
+        "suffix"   : "stable",
+        "version"  : [],
+        "dversion" : [],
+        "bversion" : [],
+        "stable"   : True,
+        "count"    : 1
+    },
+    "beta"   :
+    {
+        "pkg"      : "opera-beta",
+        "suffix"   : None,
+        "version"  : [],
+        "dversion" : [],
+        "bversion" : [],
+        "stable"   : False,
+        "count"    : 3
+    },
+    "dev"    :
+    {
+        "pkg"      : "opera-developer",
+        "suffix"   : None,
+        "version"  : [],
+        "dversion" : [],
+        "bversion" : [],
+        "stable"   : False,
+        "count"    : 3
+    }
+}
+
+def getOperaVersionInfo(base_url, archive, arch, version):
+    if not base_url.endswith("/"):
+        url = base_url + "/"
+    url += f"{version}/linux"
+    try:
+        req = urllib.request.urlopen(url)
+    except urllib.error.HTTPError:
+        return None
+    soup = BeautifulSoup(req, "html.parser")
+    base_fn = f"{archive}_{version}_{arch}."
+    rpm = False
+    for node in soup.find_all("a"):
+        v = node.get("href")
+        if v.startswith(base_fn):
+            if v.endswith("rpm"):
+                rpm = True
+            elif v.endswith("deb"):
+                return (version, "0", "deb")
+    if rpm:
+        return (version, "0", "rpm")
+    return None
+
+def getOperaVersionData(base_url, package, archive, arch, tversion,
+                        platform=None):
+    if not base_url.endswith("/"):
+        url = base_url + "/"
+    url += package
+    if platform is not None:
+        url += f"/{platform}"
+
+    req = urllib.request.urlopen(url)
+    soup = BeautifulSoup(req, "html.parser")
+    versions = []
+    for node in soup.find_all("a"):
+        v = node.get("href")
+        if v.endswith("/"):
+            v = v[:-1]
+        if v != "..":
+            check = False
+            for tver in tversion:
+                c = vercmp(v, tver[0])
+                if c is not None and c >= 0:
+                    check = True
+            if check:
+                ver = getOperaVersionInfo(base_url=url,
+                                          archive=archive,
+                                          arch=arch,
+                                          version=v)
+                if ver is not None:
+                    versions.append(ver)
+    return versions
+
+def compareOperaVersion(item1, item2):
+    return -vercmp(item1[0], item2[0])
+
+def isMajorBump(channel, uversion, tversion):
+    uv_list = uversion.split(".")
+    tv_list = tversion.split(".")
+    if ( int(uv_list[0]) > int(tv_list[0]) and
+         getPrevChannel(channel=channel) != channel ):
+        return True
+    return False
+
+def getPrevChannel(channel):
+    channels = list(pkg_data.keys())
+    channel_list = channels + [channels[len(channels) - 1]]
+    for i in range(0, len(channel_list) - 1):
+        if channel_list[i] == channel:
+            return channel_list[i + 1]
+    raise ValueError(f"Unknown channel \"{channel}\".")
+
+def getEbuildVersion(version):
+    if version[1] == "r0":
+        return version[0]
+    return f"{version[0]}-{version[1]}"
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", "-n", action="store_true")
+    args = parser.parse_args()
+
+    output = EOutput()
+
+    output.einfo("Looking up Opera versions information in tree ...")
+
+    db = portdbapi()
+    repo_path = db.getRepositoryPath(repository_id="gentoo")
+    for channel in pkg_data.keys():
+        pkg  = pkg_data[channel]["pkg"]
+        cpvs = db.cp_list(mycp=f"www-client/{pkg}", mytree=repo_path)
+        for cpv in cpvs:
+            (cp, version, rev) = pkgsplit(mypkg=cpv)
+            pkg_data[channel]["version"].append((version,rev))
+        if len(pkg_data[channel]["version"]) == 0:
+            output.ewarn("Couldn't determine tree versions for "+
+                         "www-client/{pkg}")
+        pkg_data[channel]["version"].sort(key=functools.cmp_to_key(compareOperaVersion))
+
+    opera_info = {}
+    for channel in pkg_data.keys():
+        archive  = pkg_data[channel]["pkg"]
+        platform = None
+        if pkg_data[channel]["suffix"] is not None:
+            archive += "-" + pkg_data[channel]["suffix"]
+            platform = "desktop"
+        output.einfo(f"Fetching upstream version information \"{archive}\" ...")
+        versions = getOperaVersionData(base_url="https://download1.operacdn.com/pub",
+                                       package=pkg_data[channel]["pkg"],
+                                       archive=archive, arch="amd64",
+                                       tversion=pkg_data[channel]["version"],
+                                       platform=platform)
+        versions.sort(key=functools.cmp_to_key(compareOperaVersion))
+        opera_info[channel] = versions
+
+    output.einfo("Comparing Opera version informations ...")
+
+    for channel in pkg_data.keys():
+        versions = map(operator.itemgetter(0), opera_info[channel])
+        for ver in pkg_data[channel]["version"]:
+            if ver[0] not in versions:
+                output.ewarn("Upstream dropped version " +
+                             f"{ver[0]} from channel " +
+                             f"\"{channel}\" of www-client/" +
+                             f"{pkg_data[channel]['pkg']}.")
+                pkg_data[channel]["dversion"].append(ver)
+
+    for channel in pkg_data.keys():
+        if len(opera_info[channel]) == 0:
+            output.ewarn(f"Upstream version unknown for channel \"{channel}\".")
+        else:
+            for uver in opera_info[channel]:
+                bump = None
+                for tver in pkg_data[channel]["version"]:
+                    ver_info = vercmp(uver[0], getEbuildVersion(tver))
+                    if ver_info is None:
+                        output.ewarn("Cannot determine new version for " +
+                                     f"channel \"{channel}\" of " +
+                                     f"www-client/" +
+                                     f"{pkg_data[channel]['pkg']}.")
+                        bump = False
+                        break
+                    elif ver_info > 0:
+                        if bump is None:
+                            bump = True
+                    elif ver_info == 0:
+                        bump = False
+                    elif ver_info < 0:
+                        bump = False
+                if bump:
+                    pkg_data[channel]["bversion"].append((uver[0], "r0"))
+
+            if ( len(pkg_data[channel]["bversion"]) == 0 and
+                 len(pkg_data[channel]["dversion"]) ==
+                 len(pkg_data[channel]["version"]) ):
+                output.ewarn("Update would remove all versions " +
+                             f"from tree for channel \"{channel}\" of " +
+                             f"www-client/" +
+                             f"{pkg_data[channel]['pkg']}.")
+                pkg_data[channel]["dversion"] = []
+            elif ( len(pkg_data[channel]["bversion"]) >=
+                   pkg_data[channel]["count"] ):
+                count = pkg_data[channel]["count"]
+                pkg_data[channel]["bversion"] = \
+                    pkg_data[channel]["bversion"][:count]
+                pkg_data[channel]["dversion"] = pkg_data[channel]["version"]
+            elif ( len(pkg_data[channel]["bversion"]) +
+                   len(pkg_data[channel]["version"]) >
+                   pkg_data[channel]["count"] ):
+                count = len(pkg_data[channel]["bversion"]) + \
+                    len(pkg_data[channel]["version"]) - \
+                    pkg_data[channel]["count"]
+                pkg_data[channel]["dversion"] = \
+                    pkg_data[channel]["version"][-count:]
+
+    for channel in pkg_data.keys():
+        pkg = pkg_data[channel]["pkg"]
+        output.einfo(f"www-client/{pkg} version information:")
+        vstr = ""
+        for ver in reversed(pkg_data[channel]["version"]):
+            if ver in pkg_data[channel]["dversion"]:
+                vstr += f"({getEbuildVersion(ver)})\t"
+            else:
+                vstr += f"{getEbuildVersion(ver)}\t"
+        for ver in pkg_data[channel]["bversion"]:
+            vstr += f"{getEbuildVersion(ver)}*\t"
+        output.einfo(f"\t{channel}\t{vstr}")
+
+        if len(pkg_data[channel]["bversion"]) > 0:
+            output.einfo(f"\t\t==> bump")
+        elif len(pkg_data[channel]["dversion"]) > 0:
+            output.einfo(f"\t\t==> cleanup")
+        else:
+            output.einfo(f"\t\t==> unchanged")
+
+    if not args.dry_run:
+        repo = Repo(repo_path)
+        if repo.is_dirty():
+            output.eerror("Git Repository is dirty, can't continue.")
+            sys.exit(1)
+
+        index = repo.index
+
+    for channel in pkg_data.keys():
+        pkg      = pkg_data[channel]["pkg"]
+        tver     = pkg_data[channel]["version"][0]
+        tversion = getEbuildVersion(tver)
+        for uver in pkg_data[channel]["bversion"]:
+            uversion   = getEbuildVersion(uver)
+            major_bump = isMajorBump(channel=channel,
+                                     uversion=uver[0],
+                                     tversion=tver[0])
+            output.einfo(f"Bumping www-client/{pkg}-{uversion} ...")
+            if major_bump:
+                prev_channel = getPrevChannel(channel=channel)
+                prev_pkg     = pkg_data[prev_channel]["pkg"]
+                prev_version = getEbuildVersion(
+                    pkg_data[prev_channel]["version"][0])
+                from_ebuild = os.path.join("www-client",
+                                           prev_pkg,
+                                           prev_pkg + "-" +
+                                           prev_version +
+                                           ".ebuild")
+                from_meta = os.path.join("www-client",
+                                         prev_pkg,
+                                         "metadata.xml")
+                to_meta = os.path.join("www-client",
+                                       pkg,
+                                       "metadata.xml")
+            else:
+                from_ebuild = os.path.join("www-client",
+                                           pkg,
+                                           pkg + "-" +
+                                           tversion +
+                                           ".ebuild")
+            to_ebuild = os.path.join("www-client",
+                                     pkg,
+                                     pkg + "-" +
+                                     uversion +
+                                     ".ebuild")
+
+            if args.dry_run:
+                print(f"cp {from_ebuild} {to_ebuild}")
+                if pkg_data[channel]["stable"]:
+                    print(f"ekeyword ~amd64 {to_ebuild}")
+                print(f"git add {to_ebuild}")
+                if major_bump:
+                    print(f"cp {from_meta} {to_meta}")
+                    print(f"git add {to_meta}")
+            else:
+                to_ebuild   = os.path.join(repo_path, to_ebuild)
+                from_ebuild = os.path.join(repo_path, from_ebuild)
+                shutil.copyfile(from_ebuild, to_ebuild)
+                if pkg_data[channel]["stable"]:
+                    subprocess.check_call(["ekeyword", "~amd64", to_ebuild])
+                index.add(to_ebuild)
+                if major_bump:
+                    to_meta   = os.path.join(repo_path, to_meta)
+                    from_meta = os.path.join(repo_path, from_meta)
+
+            if args.dry_run:
+                print(f"git add {os.path.join('www-client', pkg, 'Manifest')}")
+                print("git commit -m",
+                      f"\"www-client/{pkg}: automated bump",
+                      f"({uversion})",
+                      "-s -S\"")
+            else:
+                to_path = os.path.dirname(to_ebuild)
+                cfg = config.config()
+                cfg["O"] = to_path
+
+                digestgen.digestgen(None, cfg, db)
+                index.add(os.path.join(to_path, "Manifest"))
+
+                repo.git.commit("-m",
+                                f"www-client/{pkg}: automated bump ({uversion})",
+                                "-s", "-S")
+
+        if pkg_data[channel]["stable"]:
+            for bver in pkg_data[channel]["bversion"]:
+                bversion = getEbuildVersion(bver)
+                output.einfo(f"Stabilizing www-client/{pkg}-{bversion} ...")
+                ebuild = os.path.join("www-client",
+                                      pkg,
+                                      pkg + "-" +
+                                      bversion +
+                                      ".ebuild")
+                if args.dry_run:
+                    print(f"ekeyword amd64 {ebuild}")
+                    print(f"git add {os.path.join('www-client', pkg, 'Manifest')}")
+                    print("git commit -m",
+                          f"\"www-client/{pkg}: amd64 stable ({bversion})\" -s -S")
+                else:
+                    ebuild = os.path.join(repo_path, ebuild)
+                    subprocess.check_call(["ekeyword", "amd64", ebuild])
+                    index.add(ebuild)
+
+                    to_path = os.path.dirname(ebuild)
+                    cfg = config.config()
+                    cfg["O"] = to_path
+
+                    digestgen.digestgen(None, cfg, db)
+                    index.add(os.path.join(to_path, "Manifest"))
+
+                    repo.git.commit("-m",
+                                    f"www-client/{pkg}: amd64 stable ({bversion})",
+                                    "-s", "-S")
+
+        for dver in pkg_data[channel]["dversion"]:
+            dversion = getEbuildVersion(dver)
+            output.einfo(f"Removing www-client/{pkg}-{dversion} ...")
+            rm_ebuild = os.path.join("www-client",
+                                     pkg,
+                                     pkg + "-" +
+                                     dversion +
+                                     ".ebuild")
+            if args.dry_run:
+                print(f"git rm {os.path.relpath(rm_ebuild, repo_path)}")
+            else:
+                rm_ebuild = os.path.join(repo_path, rm_ebuild)
+                index.remove(rm_ebuild, working_tree=True)
+
+        if len(pkg_data[channel]["dversion"]) > 0:
+            if args.dry_run:
+                print(f"git add {os.path.join('www-client', pkg, 'Manifest')}")
+                print("git commit -m",
+                      f"\"www-client/{pkg}: remove old\" -s -S")
+            else:
+                to_path = os.path.dirname(rm_ebuild)
+                cfg = config.config()
+                cfg["O"] = to_path
+
+                digestgen.digestgen(None, cfg, db)
+                index.add(os.path.join(to_path, "Manifest"))
+
+                repo.git.commit("-m",
+                                f"www-client/{pkg}: remove old",
+                                "-s", "-S")
+
+if __name__ == "__main__":
+    main()
