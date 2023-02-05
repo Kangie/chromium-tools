@@ -74,20 +74,13 @@ pkg_data = \
     }
 }
 
-def getChromeVersionData(base_url, os):
+def getChromeVersionData(base_url, os, channel):
     if not base_url.endswith("/"):
         url = base_url + "/"
-    url += f"all.json?os={os}"
-
+    url += f"{os}/channels/{channel}/versions/all/releases?filter=endtime=1970-01-01T00:00:00Z"
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
-    return data[0]["versions"]
-
-def getChromeChannelVersion(versions, channel):
-    for item in versions:
-        if item["channel"] == channel:
-            return item["current_version"]
-    return None
+    return data["releases"][0]["version"]
 
 def isMajorBump(uversion, tversion):
     uv_list = uversion.split('.')
@@ -117,16 +110,15 @@ def main():
 
     output.einfo("Fetching upstream version information ...")
 
-    versions = getChromeVersionData(base_url="https://omahaproxy.appspot.com",
-                                    os="linux")
-
     chrome_info = {}
     for channel in channels:
         chrome_info[channel] = None
 
     for channel in channels:
-        chrome_info[channel] = getChromeChannelVersion(versions=versions,
-                                                       channel=channel)
+        version = getChromeVersionData(base_url="https://versionhistory.googleapis.com/v1/chrome/platforms",
+                                       os="linux",
+                                       channel=channel)
+        chrome_info[channel] = version
 
     output.einfo("Looking up Chrome version information in tree ...")
 
