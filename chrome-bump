@@ -71,7 +71,19 @@ pkg_data = \
             "bump"    : False,
             "stable"  : False
         }
-    }
+    },
+    # This will be parsed last so we can take advantage of google chrome stable queries
+    "www-apps":
+    {
+        "stable":
+        {
+            "pkg": "chromedriver-bin",
+            "suffix": None,
+            "version": None,
+            "bump": False,
+            "stable": True
+        }
+    },
 }
 
 def getChromeVersionData(base_url, os, channel):
@@ -126,6 +138,9 @@ def main():
     repo_path = db.getRepositoryPath(repository_id="gentoo")
     for category in pkg_data.keys():
         for channel in channels:
+            # We only care about chromedriver that matches the stable version of google-chrome
+            if category == "www-apps" and channel != "stable":
+                continue
             pkg  = pkg_data[category][channel]["pkg"]
             cpvs = db.cp_list(mycp=f"{category}/{pkg}", mytree=repo_path)
             pkg_data[category][channel]["version"] = None
@@ -143,16 +158,26 @@ def main():
                 output.ewarn("Couldn't determine tree version for "+
                              "{category}/{pkg}")
 
-    output.einfo("Comparing Chrome version informations ...")
+    output.einfo("Comparing Chrome version information...")
 
     for channel in channels:
         if chrome_info[channel] is None:
             output.ewarn(f"Upstream version unknown for channel \"{channel}\".")
         else:
             for category in pkg_data.keys():
-                pkg_data[category][channel]["bump"] = False
+                # chromedriver-bin is basically a shim for google-chrome stable for version purposes
+                if category == "www-apps":
+                    if channel == "stable":
+                        pkg_data[category][channel]["bump"] = pkg_data["www-client"][channel]["bump"]
+                        pkg_data[category][channel]["version"] = pkg_data["www-client"][channel]["version"]
+                    else:
+                        continue
+
+                else:
+                    pkg_data[category][channel]["bump"] = False
+
                 ver_info = vercmp(chrome_info[channel],
-                                  pkg_data[category][channel]["version"][0])
+                                pkg_data[category][channel]["version"][0])
                 if ver_info is None:
                     output.ewarn("Cannot determine new version for " +
                                  f"channel \"{channel}\" of " +
@@ -168,6 +193,8 @@ def main():
 
     for category in pkg_data.keys():
         for channel in channels:
+            if category == "www-apps" and channel != "stable":
+                continue
             pkg = pkg_data[category][channel]["pkg"]
             output.einfo(f"{category}/{pkg} version information:")
             need_bump = pkg_data[category][channel]["bump"]
@@ -186,6 +213,8 @@ def main():
 
     for channel in channels:
         for category in pkg_data.keys():
+            if category == "www-apps" and channel != "stable":
+                continue
             if not pkg_data[category][channel]["bump"]:
                 continue
             uversion   = chrome_info[channel]
@@ -200,10 +229,16 @@ def main():
                 suffix = ""
             output.einfo(f"Bumping {category}/{pkg} ...")
             if major_bump:
-                prev_channel = getPrevChannel(channel=channel)
-                prev_pkg     = pkg_data[category][prev_channel]["pkg"]
-                prev_version = getEbuildVersion(pkg_data[category][prev_channel]["version"])
-                prev_suffix  = pkg_data[category][prev_channel]["suffix"]
+                if category != "www-apps":
+                    prev_channel = getPrevChannel(channel=channel)
+                    prev_pkg     = pkg_data[category][prev_channel]["pkg"]
+                    prev_version = getEbuildVersion(pkg_data[category][prev_channel]["version"])
+                    prev_suffix  = pkg_data[category][prev_channel]["suffix"]
+                else:
+                    # Grab the details for google-chrome; we never have a suffix
+                    prev_pkg     = pkg_data["www-apps"]["stable"]["pkg"]
+                    prev_version = getEbuildVersion(pkg_data["www-client"]["stable"]["version"])
+                    prev_suffix  = None
                 if prev_suffix is not None:
                     prev_suffix = "_" + prev_suffix
                 else:
