@@ -103,7 +103,7 @@ def remediate_unknown_versions(versions):
 # Example usage
 # Base URL with version placeholder
 base_url = "https://blogs.opera.com/desktop/changelog-for-{}/"
-opera_chromium_versions = get_opera_chromium_versions(base_url, 100, 108)
+opera_chromium_versions = get_opera_chromium_versions(base_url, 100, 110)
 
 opera_chromium_versions = remediate_unknown_versions(opera_chromium_versions)
 
