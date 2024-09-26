@@ -9,7 +9,8 @@ def get_opera_chromium_versions(base_url, start_version, end_version):
     parsing content sections for versions from start_version to end_version (inclusive).
 
     Args:
-        base_url: The base URL for Opera changelogs with a version placeholder (e.g., "https://blogs.opera.com/desktop/changelog-for-{version}/").
+        base_url: The base URL for Opera changelogs with a version placeholder (e.g.,
+            "https://blogs.opera.com/desktop/changelog-for-{version}/").
         start_version: The starting version to extract information for (inclusive).
         end_version: The ending version to extract information for (inclusive).
 

@@ -70,6 +70,18 @@ class EdgeCVE:
 
 
 def get_edge_cves(year, month) -> list[EdgeCVE]:
+    """
+    Queries the Microsoft Security Response Center (MSRC) API for the Common Vulnerability Reporting Framework (CVRF)
+    for a given month and extracts the Chromium version mapping for Microsoft Edge (Chromium-based) from the CVRF.
+
+    Args:
+        year: The year to query.
+        month: The month to query.
+
+    Returns:
+        list[EdgeCVE]: A list of EdgeCVE objects.
+    """
+
     msrcapi = f"https://api.msrc.microsoft.com/cvrf/v3.0/cvrf/{year}-{month}"
 
     # Get the CVRF for the specified month
@@ -106,7 +118,7 @@ def get_edge_cves(year, month) -> list[EdgeCVE]:
                         # Fall back to parsing that horrible, horrible table in the notes
                         notes = vulnerability.find(".//{http://www.icasi.org/CVRF/schema/vuln/1.1}Notes")
                         # There appear to be multiple notes, but only one has content that we want:
-                        # <vuln:Note Title="FAQ" Type="FAQ" Ordinal="10">&lt;p&gt;&lt;strong&gt;What is the version information for this release?&lt;/strong&gt;&lt;/p&gt;
+                        # <vuln:Note Title="FAQ" Type="FAQ" Ordinal="10">&lt;p&gt;&lt;strong&gt;What is the version information for this release?&lt;/strong&gt;&lt;/p&gt; # noqa: E501
                         found = False
                         for note in notes:
                             if note.attrib['Title'] == "FAQ" and note.attrib['Type'] == "FAQ":
@@ -121,7 +133,7 @@ def get_edge_cves(year, month) -> list[EdgeCVE]:
                                 if len(rows) > 1:
                                     cells = rows[1].find_all('td')
                                     if len(cells) > 1:
-                                        # We want the second cell (The first is the channel, the third the chromium version it's based on)
+                                        # We want the second cell (1st is channel, 3rd is chromium version)
                                         edge_version = cells[1].text
                                         if portage_versions.ververify(edge_version):
                                             found = True
@@ -197,11 +209,14 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
+    # If we have a CVE to query (bugs contain them in the Alias field) we can query the API directly
+    # and work out which CVRF(s) to query.
     if not args.bug and not args.cve:
         month = calendar.month_name[args.month][0:3]
         for cve in get_edge_cves(args.year, month):
             print(cve)
 
+    # If we have a bug, we can query the bugzilla API to get the CVEs associated with it
     elif args.bug:
         for bug in args.bug:
             cves = get_cve_from_bug_alias(bug)
@@ -218,6 +233,7 @@ def main():
                     if cve.cve in cves:
                         print(cve)
 
+    # If we have a CVE (or list of CVEs), we can query the API directly to identify the CVRFs to query
     elif args.cve:
         msrcs = []
         cves = []
