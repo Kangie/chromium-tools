@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 def get_opera_chromium_versions(base_url, start_version, end_version):
     """
-    Extracts Opera and Chromium versions from the given base URL with version placeholders, 
+    Extracts Opera and Chromium versions from the given base URL with version placeholders,
     parsing content sections for versions from start_version to end_version (inclusive).
 
     Args:
@@ -14,7 +14,7 @@ def get_opera_chromium_versions(base_url, start_version, end_version):
         end_version: The ending version to extract information for (inclusive).
 
     Returns:
-        A dictionary mapping Opera version to Chromium version. 
+        A dictionary mapping Opera version to Chromium version.
         If no update is mentioned, the previous Chromium version is used.
         For missing data or errors, "unknown" is used.
     """
