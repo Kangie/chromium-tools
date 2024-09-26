@@ -51,12 +51,12 @@
 # Extract the <vuln:CVE>CVE-2024-7969</vuln:CVE> to extract a CVE ID and
 # map to Chromium versions using the <vuln:FixedBuild>128.0.2739.42</vuln:FixedBuild> tag (or the notes if we _have_ to).
 
-import dataclasses, datetime, sys
+import argparse, calendar, dataclasses, datetime, os, sys
 import xml.etree.ElementTree as ET
 
 from bs4 import BeautifulSoup
 from portage import versions as portage_versions
-import requests
+import bugzilla, requests
 
 
 @dataclasses.dataclass
@@ -137,10 +137,102 @@ def get_edge_cves(year, month) -> list[EdgeCVE]:
     return edge_cves
 
 
-now = datetime.datetime.now()
-year = now.year
-month = now.strftime("%B")[0:3]
+def get_cve_from_bug_alias(bugnumber: int) -> list[str]:
+    """
+    Queries the Gentoo bugzilla instance for the list of CVEs associated with a given bug.
 
-edge_cves = get_edge_cves(year, month)
-for cve in edge_cves:
-    print(cve)
+    Since we, by convention, alias bugs to CVEs, we can just query the alias field.
+
+    Args:
+        bugnumber (int): The bug number to query.
+
+    Returns:
+        list[str]: A list of CVEs associated with the bug.s
+
+    """
+    url = "bugs.gentoo.org"
+    keyfile = open(os.path.abspath('./bugzilla_api_key'))
+    api_key = keyfile.read().replace('\n','')
+    print('connecting to b.g.o')
+    bzapi = bugzilla.Bugzilla(url, api_key)
+    bug = bzapi.getbug(bugnumber)
+    cves = bug.alias
+    print(f'Bug: {bug} has {len(cves)} CVEs.')
+
+    return cves
+
+
+def get_msrc_for_cve(cve: str) -> str:
+    """
+    Do a simple webrquest to get the CVRF for a given CVE.
+
+    Args:
+        cve (str): The CVE to query.
+
+    Returns:
+        str: The CVRF for the CVE.
+    """
+
+    msrcapi = f"https://api.msrc.microsoft.com/cvrf/v3.0/updates/{cve}"
+    response = requests.get(msrcapi)
+
+    if response.status_code != 200:
+        print(f"Website returned {response.status_code}")
+        print(f"Failed to get CVRF for {cve}")
+        sys.exit(1)
+
+    # This is JSON, we want { "value": [ { "ID": "2024-Aug" }, ] }
+    return response.json().get('value')[0].get('ID')
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Script to get Edge CVEs.")
+    parser.add_argument('-m', '--month', type=int, help='Month as a number (1-12)', default=datetime.datetime.now().month)
+    parser.add_argument('-y', '--year', type=int, help='Year as a four-digit number', default=datetime.datetime.now().year)
+    parser.add_argument('-b', '--bug', nargs='*', help='List of bug identifiers')
+    parser.add_argument('-c', '--cve', nargs='*', help='List of CVE identifiers')
+    return parser.parse_args()
+
+
+def main():
+    args = parse_arguments()
+
+    if not args.bug and not args.cve:
+        month = calendar.month_name[args.month][0:3]
+        for cve in get_edge_cves(args.year, month):
+            print(cve)
+
+    elif args.bug:
+        for bug in args.bug:
+            cves = get_cve_from_bug_alias(bug)
+
+            msrcs = []
+            for cve in cves:
+                msrcs.append(get_msrc_for_cve(cve))
+
+            # Dedupe
+            msrcs = list(set(msrcs))
+
+            for msrc in msrcs:
+                for cve in get_edge_cves(msrc.split('-')[0], msrc.split('-')[1]):
+                    if cve.cve in cves:
+                        print(cve)
+
+    elif args.cve:
+        msrcs = []
+        cves = []
+        for cve_id in args.cve:
+            cves.append(cve_id)
+            msrcs.append(get_msrc_for_cve(cve_id))
+
+        # Dedupe
+        msrcs = list(set(msrcs))
+
+        for msrc in msrcs:
+            for cve in get_edge_cves(msrc.split('-')[0], msrc.split('-')[1]):
+                if cve.cve in cves:
+                    print(cve)
+
+
+if __name__ == "__main__":
+    main()
