@@ -157,7 +157,7 @@ def get_cve_from_bug_alias(bugnumber: int) -> list[str]:
     bzapi = bugzilla.Bugzilla(url, api_key)
     bug = bzapi.getbug(bugnumber)
     cves = bug.alias
-    print(f'Bug: {bug} has {len(cves)} CVEs.')
+    print(f'Bug: {bug} has {len(cves)} CVEs:\n\t{', '.join(cves)}')
 
     return cves
 
