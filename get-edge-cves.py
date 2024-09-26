@@ -51,19 +51,19 @@
 # Extract the <vuln:CVE>CVE-2024-7969</vuln:CVE> to extract a CVE ID and
 # map to Chromium versions using the <vuln:FixedBuild>128.0.2739.42</vuln:FixedBuild> tag (or the notes if we _have_ to).
 
-import datetime
-import requests
-from portage import versions as portage_versions
-import sys
+import dataclasses, datetime, sys
 import xml.etree.ElementTree as ET
+
 from bs4 import BeautifulSoup
+from portage import versions as portage_versions
+import requests
 
 
+@dataclasses.dataclass
 class EdgeCVE:
-    def __init__(self, cve, title, fixedbuild):
-        self.cve: str = cve
-        self.title: str = title
-        self.fixedbuild: str | None = fixedbuild
+    cve: str
+    title: str
+    fixedbuild: str | None
 
     def __str__(self):
         return f"{self.cve}: {self.title}: Fixed {self.fixedbuild if not None else 'unknown'}"
@@ -100,9 +100,7 @@ def get_edge_cves(year, month) -> list[EdgeCVE]:
                     fixedbuild = remediation.find(".//{http://www.icasi.org/CVRF/schema/vuln/1.1}FixedBuild")
                     if fixedbuild is not None:
                         edge_cves.append(
-                            EdgeCVE(cve_id,
-                                    cve_title,
-                                    fixedbuild.text)
+                            EdgeCVE(cve_id, cve_title, fixedbuild.text)
                         )
                     else:
                         # Fall back to parsing that horrible, horrible table in the notes
@@ -128,17 +126,13 @@ def get_edge_cves(year, month) -> list[EdgeCVE]:
                                         if portage_versions.ververify(edge_version):
                                             found = True
                                             edge_cves.append(
-                                                EdgeCVE(cve_id,
-                                                        cve_title,
-                                                        edge_version)
+                                                EdgeCVE(cve_id, cve_title, edge_version)
                                             )
 
                         if not found:
                             edge_cves.append(
-                                EdgeCVE(cve_id,
-                                        cve_title,
-                                        None)
-                                )
+                                EdgeCVE(cve_id, cve_title, None)
+                            )
 
     return edge_cves
 
@@ -147,7 +141,6 @@ now = datetime.datetime.now()
 year = now.year
 month = now.strftime("%B")[0:3]
 
-# Call the function with current year and month
 edge_cves = get_edge_cves(year, month)
 for cve in edge_cves:
     print(cve)
