@@ -39,12 +39,12 @@ while true; do
   else
     for lib in "${libs[@]}"; do
       echo "[$(date)]: Whitelisting $lib"
-      if grep -q "$lib" "${1}"; then
+      if grep -q "$lib$" "${1}"; then
         # Something went wrong if we're here but whatever.
         echo "[$(date)]: $lib already exists in keeplibs"
       else
         echo "[$(date)]: Adding $lib to keeplibs"
-        sed -i "/^\s*local keeplibs=/a \t\t$lib" "${1}"
+        sed -i "/^\s*local keeplibs=/a $lib" "${1}"
         added+=("$lib")
       fi
     done
