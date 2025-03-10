@@ -20,8 +20,8 @@ def get_testfonts(url) -> str:
         str: The SHA256 of the testfonts, or None if not found.
         """
 
-    # We're not properly parsing the DEPS file, but it's 'close enough' to JSON that
-    # we can throw away the preamble and do some remediation to read the values in.
+    # We're not properly parsing the DEPS file (it's basically python), but it's 'close enough'
+    # to JSON that we can throw away the preamble and do some remediation to read the values in.
 
     testfonts = None
     response = requests.get(url)
@@ -145,7 +145,7 @@ def get_testfonts(url) -> str:
         # Now we can get the testfonts SHA
         return deps['src/third_party/test_fonts/test_fonts']['objects'][0]['object_name']
     else:
-        raise ValueError(f"Failed to get revision info. Status code: {response.status_code}")
+        raise ValueError(f"Failed to get testfont revision info. Status code: {response.status_code}")
 
     return testfonts
 
@@ -181,7 +181,7 @@ def get_revision_info(url) -> str:
             raise ValueError("Failed to extract revision and sub-revision")
         return revision, sub_revision
     else:
-        raise ValueError(f"Failed to get revision info. Status code: {response.status_code}")
+        raise ValueError(f"Failed to get Clang and Rust revision info. Status code: {response.status_code}")
 
 
 def main():
@@ -194,6 +194,7 @@ def main():
     clang_revision, clang_sub_revision = get_revision_info(clang_url)
     rust_revision, rust_sub_revision = get_revision_info(rust_url)
     testfonts = get_testfonts(deps_url)
+    print(f"Chromium toolchain strings for: {version}")
     if clang_revision and clang_sub_revision:
         print(f"clang revision: {clang_revision}-{clang_sub_revision}")
     else:
