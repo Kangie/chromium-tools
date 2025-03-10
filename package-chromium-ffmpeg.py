@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-import re
-import os
+import argparse
 import logging
-import subprocess
+import os
+import re
 import requests
+import subprocess
 
 # Configure logging
 logging.basicConfig(
@@ -148,15 +149,16 @@ def copy_and_update_ebuild(version, commit_hash):
 
 def main():
     """Main function to handle user input and script execution."""
-    version_regex = r"^\d+\.\d+(?:\.\d+(?:\.\d+)?)?$"  # Validate version format
+    parser = argparse.ArgumentParser(description="Package Chromium ffmpeg for a specific version.")
+    parser.add_argument("version", type=str, help="Chromium version (e.g., 123.0.4567.890)")
+    args = parser.parse_args()
 
-    while True:
-        version = input("Enter Chromium version (e.g., 123.0.4567.890): ")
-        if re.match(version_regex, version):
-            break
-        else:
-            print(
-                "Invalid version format. Please enter a version like X.Y.Z.W (e.g., 123.0.4567.890)")
+    version_regex = r"^\d+\.\d+(?:\.\d+(?:\.\d+)?)?$"  # Validate version format
+    version = args.version
+
+    if not re.match(version_regex, version):
+        print("Invalid version format. Please enter a version like X.Y.Z.W (e.g., 123.0.4567.890)")
+        exit(1)
 
     version_url = f"https://chromium.googlesource.com/chromium/src.git/+/refs/tags/{version}/third_party/ffmpeg"
     commit_hash = get_commit(version_url)
