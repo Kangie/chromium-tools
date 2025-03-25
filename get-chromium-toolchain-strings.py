@@ -184,6 +184,30 @@ def get_revision_info(url) -> str:
         raise ValueError(f"Failed to get Clang and Rust revision info. Status code: {response.status_code}")
 
 
+def get_node_info(url) -> str:
+    """
+    Extracts the node revision from a Chromium source file URL.
+
+    Args:
+        url (str): The URL of the source file on GitHub's raw endpoint.
+
+    Returns:
+        str: The node revision, or None if not found.
+    """
+    response = requests.get(url)
+    if response.status_code == 200:
+        text = response.content.decode('utf-8')  # Decode to UTF-8
+        lines = text.splitlines()
+        revision = None
+        for line in lines:
+            if line.startswith("NODE_VERSION="):
+                revision = line.split("=")[1].strip().strip("\"")
+        if revision is None:
+            raise ValueError("Failed to extract node revision")
+        return revision
+    else:
+        raise ValueError(f"Failed to get node revision info. Status code: {response.status_code}")
+
 def main():
     version = sys.argv[1] if len(sys.argv) > 1 else "128.0.6613.113"
     # It's a lot easier to use GH raw URLs for this
@@ -191,8 +215,10 @@ def main():
     clang_url = f"{base_url}{version}/tools/clang/scripts/update.py"
     rust_url = f"{base_url}{version}/tools/rust/update_rust.py"
     deps_url = f"{base_url}{version}/DEPS"
+    node_url = f"{base_url}{version}/third_party/node/update_node_binaries"
     clang_revision, clang_sub_revision = get_revision_info(clang_url)
     rust_revision, rust_sub_revision = get_revision_info(rust_url)
+    node_version = get_node_info(node_url)
     testfonts = get_testfonts(deps_url)
     print(f"Chromium toolchain strings for: {version}")
     if clang_revision and clang_sub_revision:
@@ -203,6 +229,10 @@ def main():
         print(f"rust revision: {rust_revision}-{rust_sub_revision}")
     else:
         print("rust revision not found")
+    if node_version:
+        print(f"node version: {node_version}")
+    else:
+        print("node version not found")
     if testfonts:
         print(f"test fonts: {testfonts}")
     else:
