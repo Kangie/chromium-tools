@@ -1,0 +1,45 @@
+# Anything that isn't really a SPDX licence (or that we need to map to a Gentoo licence directly)
+remediation_mapping:
+    'Apache 2.0': 'Apache-2.0'
+    'Apache-with-LLVM-Exception': 'Apache-2.0-with-LLVM-exceptions'
+    'blessing': 'Public domain'
+    'BSD 2-clause': 'BSD-2'
+    'BSD-3-Clause-Clear': 'Clear-BSD'
+    'BSD-3': 'BSD'
+    'BSD-Source-Code': 'BSD-2' # False positive neon_2_sse is BSD-2
+    'Caffe': 'Apache-2.0' # False positive? tflite is Apache-2.0 only
+    'compatible licenses': 'Apache-2.0' # "Apache 2.0 and compatible licenses"; swiftshader
+    'Custome license': 'FFT2D' # Bad match antother of Takuya OOURAs `fft` codes
+    'HPND-sell-variant': 'BSD' # false positive fontconfig (BSD-3)
+    'JsonCPP': 'Public domain' # or MIT where public domain is not allowed; already covered so..
+    'LGPL v2.1': 'LGPL-2.1'
+    'LGPL v2': 'LGPL-2'
+    'Libpng-2.0': 'libpng2'
+    'LLVM Release License': 'UoI-NCSA'
+    'LZMA-SDK-9.22': 'Public domain'
+    'MIT-Modern-Variant': 'MIT'
+    'Opus-Patent-BSD-3-Clause': 'BSD'
+    'pffft': 'BSD' # Just the BSD 3 clause licence
+    'public-domain-md5': 'Public domain'
+    'SPL-SQRT-FLOOR': 'Public domain'
+    'Subzero Release License': 'UoI-NCSA'
+    'SunPro': 'SunSoft'
+    'UnRAR': 'unRAR'
+    'X11': 'MIT'
+
+# These can be verified directly in the chromium sources;
+# the chromium-licenses repo is just easier since (e.g.) v8 is a submodule.
+custom_licences:
+    'SPDXRef-Package-g711': 'Public domain' # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/third_party/webrtc/modules/third_party/g711/LICENSE
+    'SPDXRef-Package-g722': 'Public domain' # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/third_party/webrtc/modules/third_party/g722/LICENSE
+    'SPDXRef-Package-fft': 'MIT'            # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/third_party/webrtc/modules/third_party/fft/LICENSE
+    'SPDXRef-Package-base64': 'Base64'      # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/third_party/webrtc/rtc_base/third_party/base64/LICENSE
+    'SPDXRef-Package-v8-codegen': 'MIT'     # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/v8/third_party/v8/codegen/LICENSE
+    'SPDXRef-Package-v8-builtins': 'PSF-2'  # https://github.com/TeamDev-IP/Chromium-Licences/blob/master/chromium-licenses/v8/third_party/v8/builtins/LICENSE
+
+# Ignore these "licenses"
+ignore_list:
+  - 'Ignorable'
+  - 'Patent'
+  - 'Public domain'
+  - 'Custom license'
