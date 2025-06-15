@@ -1,0 +1,64 @@
+#!/bin/bash
+# Wrapper script for make-golang-vendor.bashlib
+
+if [[ ${BASH_SOURCE} = */* ]]; then
+	SCRIPT_DIR=${BASH_SOURCE%/*}/
+else
+	SCRIPT_DIR=./
+fi
+
+. ${SCRIPT_DIR}/make-golang-vendor.bashlib || { echo "Failed to source make-golang-vendor.bashlib!" ; exit 1 ; }
+
+if [[ -f "$1" ]]; then
+	# Extract version from ebuild filename
+	ESBUILD_VERSION=$(basename "$1" .ebuild | sed 's/^esbuild-//')
+elif [[ -n "$1" ]]; then
+	# Check if we're in a git repository and try to find the file relative to repo root
+	if git rev-parse --show-toplevel >/dev/null 2>&1; then
+		repo_root=$(git rev-parse --show-toplevel)
+		full_path="${repo_root}/$1"
+		if [[ -f "$full_path" ]]; then
+			einfo "Found ebuild at repository path: $full_path"
+			ESBUILD_VERSION=$(basename "$full_path" .ebuild | sed 's/^esbuild-//')
+		else
+			ewarn "Could not find ebuild file: $1 (tried $full_path)"
+			export SOURCE_DATE_EPOCH="${DEFAULT_DATE_EPOCH}"
+		fi
+	else
+		# Try to extract version from the argument directly if it looks like an ebuild name
+		if [[ "$1" == *esbuild*.ebuild ]]; then
+			einfo "Extracting version from ebuild name: $1"
+			ESBUILD_VERSION=$(basename "$1" .ebuild | sed 's/^esbuild-//')
+		else
+			ewarn "Not in a git repository and could not find ebuild file: $1"
+			export SOURCE_DATE_EPOCH="${DEFAULT_DATE_EPOCH}"
+		fi
+	fi
+else
+	eerror "No ebuild file provided or found in the current directory."
+	exit 1
+fi
+
+# Set SOURCE_DATE_EPOCH based on GitHub tag date
+if [[ -n "$ESBUILD_VERSION" ]]; then
+	get_github_tag_date evanw/esbuild "v${ESBUILD_VERSION}"
+fi
+
+export ESBUILD_VENDOR_TARBALL=0
+export ABI_X86="64" # we don't want to build multiple variants & easier to glob below
+
+# Filter out the --deps/--vendor options from the arguments since we're explicitly setting the mode
+filtered_args=()
+for arg in "$@"; do
+	case "$arg" in
+		--deps|--vendor|--mode=*)
+			# Skip these options as we're setting the mode explicitly
+			veinfo "Skipping argument: $arg"
+			;;
+		*)
+			filtered_args+=("$arg")
+			;;
+	esac
+done
+
+vendor-golang --deps "${filtered_args[@]}"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+if [[ ${BASH_SOURCE} = */* ]]; then
+	SCRIPT_DIR=${BASH_SOURCE%/*}/
+else
+	SCRIPT_DIR=./
+fi
+
+. ${SCRIPT_DIR}/vendor-node-modules.bashlib || { echo "Failed to source vendor-node-modules.bashlib!" ; exit 1 ; }
+
+if [[ -f "$1" ]]; then
+	# Extract version from ebuild filename
+	ELECTRON_VERSION=$(basename "$1" .ebuild | sed 's/^electron-//')
+elif [[ -n "$1" ]]; then
+	# Check if we're in a git repository and try to find the file relative to repo root
+	if git rev-parse --show-toplevel >/dev/null 2>&1; then
+		repo_root=$(git rev-parse --show-toplevel)
+		full_path="${repo_root}/$1"
+		if [[ -f "$full_path" ]]; then
+			einfo "Found ebuild at repository path: $full_path"
+			ELECTRON_VERSION=$(basename "$full_path" .ebuild | sed 's/^electron-//')
+		else
+			ewarn "Could not find ebuild file: $1 (tried $full_path)"
+			export SOURCE_DATE_EPOCH="${DEFAULT_DATE_EPOCH}"
+		fi
+	else
+		# Try to extract version from the argument directly if it looks like an ebuild name
+		if [[ "$1" == *electron*.ebuild ]]; then
+			einfo "Extracting version from ebuild name: $1"
+			ELECTRON_VERSION=$(basename "$1" .ebuild | sed 's/^electron-//')
+		else
+			ewarn "Not in a git repository and could not find ebuild file: $1"
+			export SOURCE_DATE_EPOCH="${DEFAULT_DATE_EPOCH}"
+		fi
+	fi
+else
+	eerror "No ebuild file provided or found in the current directory."
+	exit 1
+fi
+
+# Set SOURCE_DATE_EPOCH based on GitHub tag date
+if [[ -n "$ELECTRON_VERSION" ]]; then
+	get_github_tag_date electron/electron "v${ELECTRON_VERSION}"
+fi
+
+export ABI_X86="64" # we don't want to build multiple variants & easier to glob below
+export ELECTRON_VENDOR_TARBALL=0
+
+vendor-node-modules $@

@@ -1,0 +1,489 @@
+#!/usr/bin/env bash
+# Borrowed from sam-gentoo-scripts generate-docs.bashlib and adapted for golang modules
+# Enhances the logic from https://wiki.gentoo.org/wiki/Writing_go_Ebuilds to automatically generate vendor/deps tarballs
+# and create reproducible tarballs following Gentoo wiki guidance.
+
+. /lib/gentoo/functions.sh || { echo "Failed to source functions.sh!" ; exit 1 ; }
+. "$(pkg-config iwdevtools --variable=atomf)" || { echo "Failed to source iwdevtools' atomf!" ; exit 1 ; }
+
+DEFAULT_DATE_EPOCH="938995200" # Happy Birthday, Gentoo!
+
+# Function to get commit date from GitHub tag
+get_github_tag_date() {
+	local repo="$1"
+	local tag="$2"
+
+	if [[ -z "$repo" || -z "$tag" ]]; then
+		eerror "Usage: get_github_tag_date <repo> <tag>"
+		eerror "Example: get_github_tag_date 'foo/bar' 'v1.2.3'"
+		return 1
+	fi
+
+	einfo "Fetching commit date for tag ${tag} from GitHub repo ${repo}..."
+
+	# Use GitHub API to get tag information
+	local api_url="https://api.github.com/repos/${repo}/git/refs/tags/${tag}"
+	local tag_sha=$(curl -s "${api_url}" | grep '"sha"' | head -1 | cut -d'"' -f4)
+
+	if [[ -z "$tag_sha" ]]; then
+		ewarn "Could not fetch tag SHA for ${tag}, trying direct tag API..."
+		api_url="https://api.github.com/repos/${repo}/tags"
+		tag_sha=$(curl -s "${api_url}" | grep -A5 "\"name\": \"${tag}\"" | grep '"sha"' | head -1 | cut -d'"' -f4)
+	fi
+
+	if [[ -n "$tag_sha" ]]; then
+		einfo "Found tag SHA: ${tag_sha}"
+
+		# First check if this is a lightweight tag (points directly to commit) or annotated tag
+		local ref_type=$(curl -s "${api_url}" | grep '"type"' | head -1 | cut -d'"' -f4)
+
+		if [[ "$ref_type" == "commit" ]]; then
+			# Lightweight tag - get commit date directly
+			einfo "Lightweight tag detected, getting commit date directly"
+			local commit_url="https://api.github.com/repos/${repo}/git/commits/${tag_sha}"
+			local commit_date=$(curl -s "${commit_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
+
+			if [[ -n "$commit_date" ]]; then
+				local epoch_date=$(date -d "${commit_date}" +%s 2>/dev/null)
+				if [[ -n "$epoch_date" ]]; then
+					einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${commit_date})"
+					export SOURCE_DATE_EPOCH="$epoch_date"
+					return 0
+				fi
+			fi
+		else
+			# Annotated tag - try to get the date from the tag object itself
+			local tag_url="https://api.github.com/repos/${repo}/git/tags/${tag_sha}"
+			local tag_date=$(curl -s "${tag_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
+
+			if [[ -n "$tag_date" ]]; then
+				# Convert ISO 8601 date to epoch
+				local epoch_date=$(date -d "${tag_date}" +%s 2>/dev/null)
+				if [[ -n "$epoch_date" ]]; then
+					einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${tag_date})"
+					export SOURCE_DATE_EPOCH="$epoch_date"
+					return 0
+				fi
+			else
+				# Fallback: try to get the commit date
+				einfo "No date in tag object, trying commit date..."
+				local commit_sha=$(curl -s "${tag_url}" | grep '"sha"' | tail -1 | cut -d'"' -f4)
+				if [[ -n "$commit_sha" ]]; then
+					local commit_url="https://api.github.com/repos/${repo}/git/commits/${commit_sha}"
+					local commit_date=$(curl -s "${commit_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
+
+					if [[ -n "$commit_date" ]]; then
+						local epoch_date=$(date -d "${commit_date}" +%s 2>/dev/null)
+						if [[ -n "$epoch_date" ]]; then
+							einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${commit_date})"
+							export SOURCE_DATE_EPOCH="$epoch_date"
+							return 0
+						fi
+					fi
+				fi
+			fi
+		fi
+	fi
+
+	ewarn "Failed to fetch commit date for tag ${tag}, using fallback date"
+	export SOURCE_DATE_EPOCH=${DEFAULT_DATE_EPOCH}
+	return 1
+}
+
+# Wrapper function to handle environment preservation for both sudo and doas (but mostly doas)
+run_elevated() {
+	# Collect environment variables that need to be preserved
+	local env_vars=()
+
+	# Core Portage variables
+	[[ -n "$PORTAGE_TMPDIR" ]] && env_vars+=("PORTAGE_TMPDIR=$PORTAGE_TMPDIR")
+	[[ -n "$PORTAGE_USERNAME" ]] && env_vars+=("PORTAGE_USERNAME=$PORTAGE_USERNAME")
+	[[ -n "$PORTAGE_WORKDIR_MODE" ]] && env_vars+=("PORTAGE_WORKDIR_MODE=$PORTAGE_WORKDIR_MODE")
+
+	# Build-related variables
+	[[ -n "$ABI_X86" ]] && env_vars+=("ABI_X86=$ABI_X86")
+	[[ -n "$MAKEOPTS" ]] && env_vars+=("MAKEOPTS=$MAKEOPTS")
+	[[ -n "$EMERGE_DEFAULT_OPTS" ]] && env_vars+=("EMERGE_DEFAULT_OPTS=$EMERGE_DEFAULT_OPTS")
+
+	# Package-specific VENDOR_TARBALL variables (dynamically detect them)
+	local var
+	for var in $(compgen -v | grep '_VENDOR_TARBALL$'); do
+		[[ -n "${!var}" ]] && env_vars+=("$var=${!var}")
+	done
+
+	# Language/locale settings
+	[[ -n "$LC_ALL" ]] && env_vars+=("LC_ALL=$LC_ALL")
+	[[ -n "$LANG" ]] && env_vars+=("LANG=$LANG")
+
+	# If using doas, we need to explicitly pass all environment variables
+	# If using sudo, it preserves environment by default with -E, but we'll be explicit since we had to do the work for doas anyway
+	if [[ "$ELEVATE_CMD" == "sudo" || "$ELEVATE_CMD" == "doas" ]]; then
+		"$ELEVATE_CMD" env "${env_vars[@]}" "$@"
+	elif [[ "$ELEVATE_CMD" == "true" ]]; then
+		# If ELEVATE_CMD is set to "true", just run the command directly; we're root
+		env "${env_vars[@]}" "$@"
+	else
+		eerror "Unknown elevation command: $ELEVATE_CMD"
+		exit 1
+	fi
+}
+
+# Helper function to run ebuild commands with all necessary environment variables
+run_ebuild_with_env() {
+	local env_vars=()
+
+	# Build core environment array
+	env_vars+=("FEATURES=-test")
+	[[ -n "$PORTAGE_TMPDIR" ]] && env_vars+=("PORTAGE_TMPDIR=$PORTAGE_TMPDIR")
+	[[ -n "$PORTAGE_USERNAME" ]] && env_vars+=("PORTAGE_USERNAME=$PORTAGE_USERNAME")
+	[[ -n "$PORTAGE_WORKDIR_MODE" ]] && env_vars+=("PORTAGE_WORKDIR_MODE=$PORTAGE_WORKDIR_MODE")
+
+	# Include package-specific VENDOR_TARBALL variables
+	local var
+	for var in $(compgen -v | grep '_VENDOR_TARBALL$'); do
+		[[ -n "${!var}" ]] && env_vars+=("$var=${!var}")
+	done
+
+	# Run the ebuild command
+	env "${env_vars[@]}" ebuild "$@"
+}
+
+vendor-golang_setup_environment() {
+
+	atomset ${1} || atomset ${PWD}/${1} || { eerror "Failed to run: 'atomset ${1}'. Exiting!" ; exit 1 ; }
+
+	# Set package-specific VENDOR_TARBALL variable to 0 to avoid use/fetching of vendor tarball during this process
+	# Check if a specific package VENDOR_TARBALL variable is already set
+	local vendor_tarball_var="${PN^^}_VENDOR_TARBALL"
+	if [[ -z "${!vendor_tarball_var}" ]]; then
+		export ${vendor_tarball_var}=0
+		einfo "Set ${vendor_tarball_var}=0 to avoid fetching vendor tarball during generation"
+	fi
+
+	export PORTAGE_TMPDIR=${PORTAGE_TMPDIR:-/tmp/${0##*/}}
+	export PORTAGE_USERNAME="$(whoami)"
+	export PORTAGE_WORKDIR_MODE="775"
+
+	# Go-specific environment variables
+	export GOPROXY=direct
+	export GOSUMDB=off
+	export GONOSUMDB="*"
+
+	# Make reproducible tarballs. Clobber timestamps, sort files, and set ownership.
+	# Convert epoch to ISO 8601 format for tar --mtime
+	local mtime_date="${SOURCE_DATE_EPOCH:-${DEFAULT_DATE_EPOCH}}"
+	if [[ "$mtime_date" =~ ^[0-9]+$ ]]; then
+		# If it's an epoch timestamp, convert to ISO format
+		mtime_date="@${mtime_date}"
+	fi
+	export REPRODUCIBLE_TAR_ARGS=(
+		"--mtime=${mtime_date}"
+		"--sort=name"
+		"--owner=portage"
+		"--group=portage"
+	)
+	export XZ_DEFAULTS="-9 -T 0"
+
+	if [[ ${PWD} == */${CATEGORY}/${PN} ]] ; then
+		# If we're already in the directory with the ebuilds,
+		# we can back up instead.
+		local repo_path=${PWD}/../..
+	else
+		local repo_path=${PWD}
+	fi
+
+	# Clean up tmpdir if it exists; create it if it doesn't.
+	if [[ -d "${PORTAGE_TMPDIR}" ]] ; then
+		rm -rf "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PN} || { eerror "Failed to clean up ${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PN}. Exiting!" ; exit 1 ; }
+	fi
+	mkdir -p "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PN} || { eerror "Failed to create ${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PN}. Exiting!" ; exit 1 ; }
+
+	# We can't guarantee that sudo is installed; but if we find it prefer sudo.
+	if [[ ${UID} == "0" ]] ; then
+		ELEVATE_CMD="true"
+	elif command -v sudo >/dev/null 2>&1; then
+		ELEVATE_CMD="sudo"
+	elif command -v doas >/dev/null 2>&1; then
+		ELEVATE_CMD="doas"
+	else
+		echo "Error: Neither sudo nor doas is available."
+		exit 1
+	fi
+
+	# Determine tarball suffix based on mode
+	local tarball_suffix
+	tarball_suffix=$(get_tarball_suffix)
+
+	# Clean up any existing vendor/deps tarball entries for this specific version before regenerating manifest
+	local manifest_file="${repo_path}/${CATEGORY}/${PN}/Manifest"
+	if [[ -f "$manifest_file" ]]; then
+		einfo "Cleaning existing ${P}-${tarball_suffix}.tar.xz entries from Manifest"
+		sed -i "/${P}-${tarball_suffix}\.tar\.xz/d" "$manifest_file" || true
+	fi
+
+	# Remove vendor/deps tarball from distfiles if it exists
+	local vendor_tarball="/var/cache/distfiles/${P}-${tarball_suffix}.tar.xz"
+	if [[ -f "$vendor_tarball" ]]; then
+		einfo "Removing existing ${tarball_suffix} tarball: $vendor_tarball"
+		rm -f "$vendor_tarball" || true
+	fi
+
+	# Install dependencies needed for the package
+	run_elevated env FEATURES="-test" env PORTDIR_OVERLAY="${repo_path}" emerge --quiet --oneshot --onlydeps =${PF} || { eerror "Installing dependencies for =${PF} failed! Exiting!" ; exit 1 ; }
+
+	# Make sure we have the source files; can't use pkgdev - it'll ignore the envvar
+	run_ebuild_with_env "${repo_path}/${1}" manifest || { eerror "Failed to update Manifest" ; exit 1 ; }
+	run_ebuild_with_env "${repo_path}/${1}" clean unpack || { eerror "Failed to unpack ${1}. Exiting!" ; exit 1 ; }
+
+	WORKDIR="${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PF}/work
+	# Borrowed from mgorny-dev-tools' pkgdiff
+	S=$(sed -nr 's/^declare -x S="(.*)"/\1/p' "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PF}/temp/environment)
+
+	dir=$(mktemp -d)
+	mkdir "${dir}"/${P}-${tarball_suffix} || { eerror "Creating ${dir}/${P}-${tarball_suffix} failed. Exiting!" ; exit 1 ; }
+}
+
+# Function to handle deps mode tarball creation
+generate_deps_tarball() {
+	local tarball_suffix="$1"
+	local package_dir="$2"
+
+	einfo "Downloading Go module dependencies for ${P} in deps mode"
+
+	# Wiki sez: GOMODCACHE="${PWD}"/go-mod go mod download -modcacherw -x
+	export GOMODCACHE="${PWD}/go-mod"
+
+	# Download all dependencies with -modcacherw to make files writable
+	go mod download -modcacherw -x || { eerror "go mod download failed!" ; exit 1 ; }
+
+	# Copy the go-mod directory to our vendor directory
+	if [[ -d "go-mod" ]]; then
+		cp -r go-mod "${dir}/${P}-${tarball_suffix}/" || { eerror "Failed to copy go-mod!" ; exit 1 ; }
+	fi
+
+	# Copy go.mod and go.sum for reference
+	copy_go_files "${dir}/${P}-${tarball_suffix}/"
+}
+
+# Function to handle vendor mode tarball creation
+generate_vendor_tarball() {
+	local tarball_suffix="$1"
+	local package_dir="$2"
+
+	einfo "Creating Go vendor directory for ${P}"
+
+	# Clean any existing vendor directory
+	rm -rf vendor
+
+	# Create vendor directory
+	go mod vendor || { eerror "go mod vendor failed!" ; exit 1 ; }
+
+	# create tarball directly from source directory structure
+	# this enables src_unpack to take care of getting the vendor directory
+	# into the right place
+	# The tarball should contain ${P}/vendor, not just vendor
+	if [[ -d "vendor" ]]; then
+		# Create the tarball directly from the parent directory to get the correct structure
+		pushd .. >/dev/null || { eerror "Failed to change to parent directory"; exit 1; }
+
+		# Create tarball with the ${P}/vendor structure as per official guidance
+		tar "${REPRODUCIBLE_TAR_ARGS[@]}" -caf "${dir}/${P}-${tarball_suffix}.tar.xz" "${P}/vendor" || { eerror "Failed to create vendor tarball!" ; exit 1 ; }
+
+		popd >/dev/null || exit 1
+
+		# Mark that we've already created the tarball
+		export VENDOR_TARBALL_CREATED=1
+
+		# Output the tarball location
+		einfo "Vendor tarball created at: ${dir}/${P}-${tarball_suffix}.tar.xz"
+
+		# Copy go.mod and go.sum for reference (back in package directory)
+		copy_go_files "${dir}/${P}-${tarball_suffix}/"
+	fi
+}
+
+vendor-golang_generate_vendor() {
+	local tarball_suffix
+	tarball_suffix=$(get_tarball_suffix)
+
+	if [[ "$GOLANG_VENDOR_MODE" == "deps" ]]; then
+		ebegin "Generating Go module dependencies for ${P}"
+	else
+		ebegin "Generating Go vendor directory for ${P}"
+	fi
+
+	# Change to the package source directory (workdir)
+	# The directory name might be ${P}, ${PN}, or something else entirely
+	local package_dir=""
+
+	# First try the standard ${P} directory
+	if [[ -d "${WORKDIR}/${P}" ]]; then
+		package_dir="${WORKDIR}/${P}"
+	# Then try ${PN} directory
+	elif [[ -d "${WORKDIR}/${PN}" ]]; then
+		package_dir="${WORKDIR}/${PN}"
+	else
+		# Look for any directory that contains package.json or lock files
+		for dir in "${WORKDIR}"/*; do
+			if [[ -d "$dir" && (-f "$dir/package.json" || -f "$dir/pnpm-lock.yaml" || -f "$dir/yarn.lock" || -f "$dir/package-lock.json") ]]; then
+				package_dir="$dir"
+				break
+			fi
+		done
+	fi
+
+	if [[ -z "$package_dir" || ! -d "$package_dir" ]]; then
+		eerror "Could not find package directory with package.json in ${WORKDIR}"
+		eerror "Available directories:"
+		ls -la "${WORKDIR}/" >&2
+		exit 1
+	fi
+
+	pushd "$package_dir" >/dev/null || { eerror "Failed to change to ${package_dir}. Exiting!" ; exit 1 ; }
+
+	# Check if go.mod exists
+	if [[ ! -f "go.mod" ]]; then
+		eerror "No go.mod file found in ${package_dir}"
+		exit 1
+	fi
+
+	# Ensure go.sum exists or generate it
+	if [[ ! -f "go.sum" ]]; then
+		einfo "No go.sum found, running 'go mod tidy' to generate it"
+		go mod tidy || { eerror "go mod tidy failed!" ; exit 1 ; }
+	fi
+
+	if [[ "$GOLANG_VENDOR_MODE" == "deps" ]]; then
+		generate_deps_tarball "$tarball_suffix" "$package_dir"
+	else
+		generate_vendor_tarball "$tarball_suffix" "$package_dir"
+	fi
+
+	popd >/dev/null || exit 1
+	eend ${?} || { eerror "Generating Go ${tarball_suffix} failed!" ; exit 1 ; }
+}
+
+# Helper function to get tarball suffix based on mode
+get_tarball_suffix() {
+	if [[ "$GOLANG_VENDOR_MODE" == "deps" ]]; then
+		echo "deps"
+	else
+		echo "vendor"
+	fi
+}
+
+# Helper function to copy go.mod and go.sum files
+copy_go_files() {
+	local target_dir="$1"
+	cp go.mod go.sum "$target_dir/" || { eerror "Failed to copy go.mod/go.sum!" ; exit 1 ; }
+}
+
+vendor-golang_create_tarball() {
+	local tarball_suffix=$(get_tarball_suffix)
+
+	# Skip if tarball was already created in vendor mode
+	if [[ "$VENDOR_TARBALL_CREATED" == "1" ]]; then
+		einfo "Go ${tarball_suffix} tarball already created"
+		return 0
+	fi
+
+	ebegin "Creating Go ${tarball_suffix} tarball"
+
+	# Embed the calling script within the tarball for posterity
+	cp "${0}" "$(dirname "${BASH_SOURCE[0]}")/make-golang-vendor.bashlib" "${dir}/${P}-${tarball_suffix}/" || { eerror "Failed to embed script within tarball. Exiting!" ; exit 1 ; }
+
+	# Set reproducible timestamps on embedded script to ensure consistent tarballs
+	touch -d "@${SOURCE_DATE_EPOCH:-${DEFAULT_DATE_EPOCH}}" "${dir}/${P}-${tarball_suffix}/$(basename "${0}")"
+
+	tar "${REPRODUCIBLE_TAR_ARGS[@]}" -caf "${dir}/${P}-${tarball_suffix}.tar.xz" -C "${dir}" ${P}-${tarball_suffix}/
+	eend ${?} || { eerror "Creating tarball failed!" ; exit 1 ; }
+
+	einfo "Go ${tarball_suffix} tarball created at ${dir}/${P}-${tarball_suffix}.tar.xz"
+}
+
+# Parse command line options for vendor mode
+parse_golang_vendor_options() {
+	veinfo "parse_golang_vendor_options called with: $*"
+	while [[ $# -gt 0 ]]; do
+		veinfo "Processing argument: $1"
+		case $1 in
+			--mode=*)
+				export GOLANG_VENDOR_MODE="${1#*=}"
+				einfo "Set mode via --mode= to: ${GOLANG_VENDOR_MODE}"
+				if [[ "$GOLANG_VENDOR_MODE" != "vendor" && "$GOLANG_VENDOR_MODE" != "deps" ]]; then
+					eerror "Invalid mode: $GOLANG_VENDOR_MODE. Must be 'vendor' or 'deps'"
+					exit 1
+				fi
+				shift
+				;;
+			--vendor)
+				export GOLANG_VENDOR_MODE="vendor"
+				einfo "Set mode via --vendor to: ${GOLANG_VENDOR_MODE}"
+				shift
+				;;
+			--deps)
+				export GOLANG_VENDOR_MODE="deps"
+				einfo "Set mode via --deps to: ${GOLANG_VENDOR_MODE}"
+				shift
+				;;
+			--help|-h)
+				einfo "Usage: make-golang-vendor [OPTIONS] <ebuild>"
+				einfo "Options:"
+				einfo "  --vendor, --mode=vendor  Create vendor directory tarball (default)"
+				einfo "  --deps, --mode=deps      Create dependencies cache tarball"
+				einfo "  --help, -h               Show this help message"
+				exit 0
+				;;
+			-*)
+				eerror "Unknown option: $1"
+				exit 1
+				;;
+			*)
+				# This should be the ebuild file, stop parsing options
+				einfo "Found non-option argument: $1, stopping option parsing"
+				break
+				;;
+		esac
+	done
+}
+
+vendor-golang() {
+	# Parse options if GOLANG_VENDOR_MODE is not already set
+	if [[ -z "$GOLANG_VENDOR_MODE" ]]; then
+		parse_golang_vendor_options "$@"
+	else
+		veinfo "GOLANG_VENDOR_MODE already set to: $GOLANG_VENDOR_MODE"
+	fi
+
+	# Remove parsed options from arguments
+	if [[ "$*" == *"--mode="* ]] || [[ "$*" == *"--deps"* ]] || [[ "$*" == *"--vendor"* ]]; then
+		while [[ $# -gt 0 ]]; do
+			case $1 in
+				--mode=*|--vendor|--deps|--help|-h)
+					shift
+					;;
+				*)
+					break
+					;;
+			esac
+		done
+	fi
+
+	einfo "Using Go ${GOLANG_VENDOR_MODE} mode"
+
+	vendor-golang_setup_environment "$@"
+	vendor-golang_generate_vendor "$@"
+	# in vendor mode the tarball is created in the generate_vendor function
+	if [[ "$GOLANG_VENDOR_MODE" == "deps" ]]; then
+		vendor-golang_create_tarball "$@"
+	fi
+}
+
+# Backward compatibility aliases
+make-golang-vendor() {
+	vendor-golang "$@"
+}
+
+vendor-go() {
+	vendor-golang "$@"
+}
