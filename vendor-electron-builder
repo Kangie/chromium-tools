@@ -8,14 +8,14 @@ fi
 . ${SCRIPT_DIR}/vendor-node-modules.bashlib || { echo "Failed to source vendor-node-modules.bashlib!" ; exit 1 ; }
 
 # Extract version from input args
-vendor_common_extract_version "$1" "vesktop" "ELECTRON_VERSION"
+vendor_common_extract_version "$1" "electron-builder" "ELECTRON_VERSION"
 
 # Set SOURCE_DATE_EPOCH based on GitHub tag date
 if [[ -n "$ELECTRON_VERSION" ]]; then
-	get_github_tag_date "Vencord/Vesktop" "v${ELECTRON_VERSION}"
+	get_github_tag_date "electron-userland/electron-builder" "v${ELECTRON_VERSION}"
 fi
 
 export ABI_X86="64" # we don't want to build multiple variants & easier to glob below
-export VESKTOP_VENDOR_TARBALL=0
+export ELECTRON_BUILDER_VENDOR_TARBALL=0
 
 vendor-node-modules $@

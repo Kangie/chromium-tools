@@ -1,278 +1,28 @@
 #!/usr/bin/env bash
 # Borrowed from sam-gentoo-scripts generate-docs.bashlib and adapted for node modules
 
-. /lib/gentoo/functions.sh || { echo "Failed to source functions.sh!" ; exit 1 ; }
-. "$(pkg-config iwdevtools --variable=atomf)" || { echo "Failed to source iwdevtools' atomf!" ; exit 1 ; }
-
-DEFAULT_DATE_EPOCH="938995200" # Happy Birthday, Gentoo!
-
-# Function to get commit date from GitHub tag
-get_github_tag_date() {
-	local repo="$1"
-	local tag="$2"
-
-	if [[ -z "$repo" || -z "$tag" ]]; then
-		eerror "Usage: get_github_tag_date <repo> <tag>"
-		eerror "Example: get_github_tag_date 'foo/bar' 'v1.2.3'"
-		return 1
-	fi
-
-	einfo "Fetching commit date for tag ${tag} from GitHub repo ${repo}..."
-
-	# Use GitHub API to get tag information
-	local api_url="https://api.github.com/repos/${repo}/git/refs/tags/${tag}"
-	local tag_sha=$(curl -s "${api_url}" | grep '"sha"' | head -1 | cut -d'"' -f4)
-
-	if [[ -z "$tag_sha" ]]; then
-		ewarn "Could not fetch tag SHA for ${tag}, trying direct tag API..."
-		api_url="https://api.github.com/repos/${repo}/tags"
-		tag_sha=$(curl -s "${api_url}" | grep -A5 "\"name\": \"${tag}\"" | grep '"sha"' | head -1 | cut -d'"' -f4)
-	fi
-
-	if [[ -n "$tag_sha" ]]; then
-		einfo "Found tag SHA: ${tag_sha}"
-
-		# First check if this is a lightweight tag (points directly to commit) or annotated tag
-		local ref_type=$(curl -s "${api_url}" | grep '"type"' | head -1 | cut -d'"' -f4)
-
-		if [[ "$ref_type" == "commit" ]]; then
-			# Lightweight tag - get commit date directly
-			einfo "Lightweight tag detected, getting commit date directly"
-			local commit_url="https://api.github.com/repos/${repo}/git/commits/${tag_sha}"
-			local commit_date=$(curl -s "${commit_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
-
-			if [[ -n "$commit_date" ]]; then
-				local epoch_date=$(date -d "${commit_date}" +%s 2>/dev/null)
-				if [[ -n "$epoch_date" ]]; then
-					einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${commit_date})"
-					export SOURCE_DATE_EPOCH="$epoch_date"
-					return 0
-				fi
-			fi
-		else
-			# Annotated tag - try to get the date from the tag object itself
-			local tag_url="https://api.github.com/repos/${repo}/git/tags/${tag_sha}"
-			local tag_date=$(curl -s "${tag_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
-
-			if [[ -n "$tag_date" ]]; then
-				# Convert ISO 8601 date to epoch
-				local epoch_date=$(date -d "${tag_date}" +%s 2>/dev/null)
-				if [[ -n "$epoch_date" ]]; then
-					einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${tag_date})"
-					export SOURCE_DATE_EPOCH="$epoch_date"
-					return 0
-				fi
-			else
-				# Fallback: try to get the commit date
-				einfo "No date in tag object, trying commit date..."
-				local commit_sha=$(curl -s "${tag_url}" | grep '"sha"' | tail -1 | cut -d'"' -f4)
-				if [[ -n "$commit_sha" ]]; then
-					local commit_url="https://api.github.com/repos/${repo}/git/commits/${commit_sha}"
-					local commit_date=$(curl -s "${commit_url}" | grep '"date"' | head -1 | cut -d'"' -f4)
-
-					if [[ -n "$commit_date" ]]; then
-						local epoch_date=$(date -d "${commit_date}" +%s 2>/dev/null)
-						if [[ -n "$epoch_date" ]]; then
-							einfo "Setting SOURCE_DATE_EPOCH to ${epoch_date} (${commit_date})"
-							export SOURCE_DATE_EPOCH="$epoch_date"
-							return 0
-						fi
-					fi
-				fi
-			fi
-		fi
-	fi
-
-	ewarn "Failed to fetch commit date for tag ${tag}, using fallback date"
-	export SOURCE_DATE_EPOCH=${DEFAULT_DATE_EPOCH}
-	return 1
-}
-
-# Wrapper function to handle environment preservation for both sudo and doas (but mostly doas)
-run_elevated() {
-	# Collect environment variables that need to be preserved
-	local env_vars=()
-
-	# Core Portage variables
-	[[ -n "$PORTAGE_TMPDIR" ]] && env_vars+=("PORTAGE_TMPDIR=$PORTAGE_TMPDIR")
-	[[ -n "$PORTAGE_USERNAME" ]] && env_vars+=("PORTAGE_USERNAME=$PORTAGE_USERNAME")
-	[[ -n "$PORTAGE_WORKDIR_MODE" ]] && env_vars+=("PORTAGE_WORKDIR_MODE=$PORTAGE_WORKDIR_MODE")
-
-	# Build-related variables
-	[[ -n "$ABI_X86" ]] && env_vars+=("ABI_X86=$ABI_X86")
-	[[ -n "$MAKEOPTS" ]] && env_vars+=("MAKEOPTS=$MAKEOPTS")
-	[[ -n "$EMERGE_DEFAULT_OPTS" ]] && env_vars+=("EMERGE_DEFAULT_OPTS=$EMERGE_DEFAULT_OPTS")
-
-	# Package-specific VENDOR_TARBALL variables (dynamically detect them)
-	local var
-	for var in $(compgen -v | grep '_VENDOR_TARBALL$'); do
-		[[ -n "${!var}" ]] && env_vars+=("$var=${!var}")
-	done
-
-	# Language/locale settings
-	[[ -n "$LC_ALL" ]] && env_vars+=("LC_ALL=$LC_ALL")
-	[[ -n "$LANG" ]] && env_vars+=("LANG=$LANG")
-
-	# If using doas, we need to explicitly pass all environment variables
-	# If using sudo, it preserves environment by default with -E, but we'll be explicit since we had to do the work for doas anyway
-	if [[ "$ELEVATE_CMD" == "sudo" || "$ELEVATE_CMD" == "doas" ]]; then
-		"$ELEVATE_CMD" env "${env_vars[@]}" "$@"
-	elif [[ "$ELEVATE_CMD" == "true" ]]; then
-		# If ELEVATE_CMD is set to "true", just run the command directly; we're root
-		env "${env_vars[@]}" "$@"
-	else
-		eerror "Unknown elevation command: $ELEVATE_CMD"
-		exit 1
-	fi
-}
-
-# Helper function to run ebuild commands with all necessary environment variables
-run_ebuild_with_env() {
-	local env_vars=()
-
-	# Build core environment array
-	env_vars+=("FEATURES=-test")
-	[[ -n "$PORTAGE_TMPDIR" ]] && env_vars+=("PORTAGE_TMPDIR=$PORTAGE_TMPDIR")
-	[[ -n "$PORTAGE_USERNAME" ]] && env_vars+=("PORTAGE_USERNAME=$PORTAGE_USERNAME")
-	[[ -n "$PORTAGE_WORKDIR_MODE" ]] && env_vars+=("PORTAGE_WORKDIR_MODE=$PORTAGE_WORKDIR_MODE")
-
-	# Include package-specific VENDOR_TARBALL variables
-	local var
-	for var in $(compgen -v | grep '_VENDOR_TARBALL$'); do
-		[[ -n "${!var}" ]] && env_vars+=("$var=${!var}")
-	done
-
-	# Run the ebuild command
-	env "${env_vars[@]}" ebuild "$@"
-}
+# Source the common vendor library
+. "$(dirname "${BASH_SOURCE[0]}")/vendor-common.bashlib" || { echo "Failed to source vendor-common.bashlib!" ; exit 1 ; }
 
 vendor-node-modules_setup_environment() {
+	vendor_common_setup_environment "$1"
 
-	atomset ${1} || atomset ${PWD}/${1} || { eerror "Failed to run: 'atomset ${1}'. Exiting!" ; exit 1 ; }
-
-	# Set package-specific VENDOR_TARBALL variable to 0 to avoid use/fetching of vendor tarball during this process
-	# Check if a specific package VENDOR_TARBALL variable is already set
-	local vendor_tarball_var="${PN^^}_VENDOR_TARBALL"
-	if [[ -z "${!vendor_tarball_var}" ]]; then
-		export ${vendor_tarball_var}=0
-		einfo "Set ${vendor_tarball_var}=0 to avoid fetching vendor tarball during generation"
-	fi
-
-	export PORTAGE_TMPDIR=${PORTAGE_TMPDIR:-/tmp/${0##*/}}
-	export PORTAGE_USERNAME="$(whoami)"
-	export PORTAGE_WORKDIR_MODE="775"
+	# Node-specific environment variables
 	# https://www.electronjs.org/docs/latest/tutorial/installation#skip-binary-download
 	# We will always provide a system-wide electron, there's no need to download the binary.
 	# I think this should be skipped by the npm and yarn invocations as well, but let's be extra sure.
 	export ELECTRON_SKIP_BINARY_DOWNLOAD=1
-	# Make reproducible tarballs. Clobber timestamps, sort files, and set ownership.
-	# Convert epoch to ISO 8601 format for tar --mtime
-	local mtime_date="${SOURCE_DATE_EPOCH:-${DEFAULT_DATE}}"
-	if [[ "$mtime_date" =~ ^[0-9]+$ ]]; then
-		# If it's an epoch timestamp, convert to ISO format
-		mtime_date="@${mtime_date}"
-	fi
-	export REPRODUCIBLE_TAR_ARGS=(
-		"--mtime=${mtime_date}"
-		"--sort=name"
-		"--owner=portage"
-		"--group=portage"
-	)
-	export XZ_DEFAULTS="-9 -T 0"
 
-	if [[ ${PWD} == */${CATEGORY}/${PN} ]] ; then
-		# If we're already in the directory with the ebuilds,
-		# we can back up instead.
-		local repo_path=${PWD}/../..
-	else
-		local repo_path=${PWD}
-	fi
-
-	# Clean up tmpdir if it exists; create it if it doesn't.
-	if [[ -d "${PORTAGE_TMPDIR}" ]] ; then
-		rm -rf "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PN} || { eerror "Failed to clean up ${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PN}. Exiting!" ; exit 1 ; }
-	fi
-	mkdir -p "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PN} || { eerror "Failed to create ${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PN}. Exiting!" ; exit 1 ; }
-
-	# We can't guarantee that sudo is installed; but if we find it prefer sudo.
-	if [[ ${UID} == "0" ]] ; then
-		ELEVATE_CMD="true"
-	elif command -v sudo >/dev/null 2>&1; then
-		ELEVATE_CMD="sudo"
-	elif command -v doas >/dev/null 2>&1; then
-		ELEVATE_CMD="doas"
-	else
-		echo "Error: Neither sudo nor doas is available."
-		exit 1
-	fi
-
-	# Clean up any existing vendor tarball entries for this specific version before regenerating manifest
-	# This is important because we might have fetched a 404 page or corrupt file previously.
-	local manifest_file="${repo_path}/${CATEGORY}/${PN}/Manifest"
-	if [[ -f "$manifest_file" ]]; then
-		einfo "Cleaning existing ${P}-vendor.tar.xz entries from Manifest"
-		# Remove lines containing this specific version's vendor tarball
-		sed -i "/${P}-vendor\.tar\.xz/d" "$manifest_file" || true
-	fi
-
-	# Remove vendor tarball from distfiles if it exists
-	local vendor_tarball="/var/cache/distfiles/${P}-vendor.tar.xz"
-	if [[ -f "$vendor_tarball" ]]; then
-		einfo "Removing existing vendor tarball: $vendor_tarball"
-		rm -f "$vendor_tarball" || true
-	fi
-
-	# Install dependencies needed for the package
-	run_elevated env FEATURES="-test" env PORTDIR_OVERLAY="${repo_path}" emerge --quiet --oneshot --onlydeps =${PF} || { eerror "Installing dependencies for =${PF} failed! Exiting!" ; exit 1 ; }
-
-	# Make sure we have the source files; can't use pkgdev - it'll ignore the envvar
-	run_ebuild_with_env "${repo_path}/${1}" manifest || { eerror "Failed to update Manifest" ; exit 1 ; }
-	run_ebuild_with_env "${repo_path}/${1}" clean unpack || { eerror "Failed to unpack ${1}. Exiting!" ; exit 1 ; }
-
-	WORKDIR="${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PF}/work
-	# Borrowed from mgorny-dev-tools' pkgdiff
-	S=$(sed -nr 's/^declare -x S="(.*)"/\1/p' "${PORTAGE_TMPDIR}"/portage/${CATEGORY}/${PF}/temp/environment)
+	vendor_common_cleanup_and_prepare "vendor"
+	vendor_common_install_and_unpack "$1"
 
 	dir=$(mktemp -d)
-}
-
-# Function to detect and set the package source directory
-vendor-node-modules_detect_source_directory() {
-	local package_dir=""
-
-	# First try the standard ${P} directory
-	if [[ -d "${WORKDIR}/${P}" ]]; then
-		package_dir="${WORKDIR}/${P}"
-	# Then try ${PN} directory
-	elif [[ -d "${WORKDIR}/${PN}" ]]; then
-		package_dir="${WORKDIR}/${PN}"
-	else
-		# Look for any directory that contains package.json or lock files
-		local dir
-		for dir in "${WORKDIR}"/*; do
-			if [[ -d "$dir" && (-f "$dir/package.json" || -f "$dir/pnpm-lock.yaml" || -f "$dir/yarn.lock" || -f "$dir/package-lock.json") ]]; then
-				package_dir="$dir"
-				break
-			fi
-		done
-	fi
-
-	if [[ -z "$package_dir" || ! -d "$package_dir" ]]; then
-		eerror "Could not find package directory with package.json in ${WORKDIR}"
-		eerror "Available directories:"
-		ls -la "${WORKDIR}/" >&2
-		return 1
-	fi
-
-	einfo "Using package directory: ${package_dir}"
-	S="${package_dir}"
-	return 0
 }
 
 vendor-node-modules_generate_vendor() {
 	ebegin "Generating vendor dependencies for ${P}"
 
-	pushd "$S" >/dev/null || { eerror "Failed to change to ${S}. Exiting!" ; exit 1 ; }
+	pushd "$S" >/dev/null || die "Failed to change to ${S}. Exiting!"
 
 	# Detect package manager and generate vendor dependencies
 	if [[ -f "pnpm-lock.yaml" ]]; then
@@ -282,7 +32,7 @@ vendor-node-modules_generate_vendor() {
 
 		# Install dependencies with pnpm (--shamefully-hoist forces a 'flat' node_modules structure to make life easier)
 		pnpm install --frozen-lockfile --ignore-scripts \
-			--shamefully-hoist || { eerror "pnpm install failed!" ; exit 1 ; }
+			--shamefully-hoist || die "pnpm install failed!"
 
 	elif [[ -f "yarn.lock" ]]; then
 		einfo "Using yarn to generate vendor dependencies"
@@ -291,7 +41,7 @@ vendor-node-modules_generate_vendor() {
 
 		# Install dependencies with yarn
 		yarn install --frozen-lockfile --ignore-engines \
-			--ignore-platform  --ignore-scripts --link-duplicates || { eerror "yarn install failed!" ; exit 1 ; }
+			--ignore-platform  --ignore-scripts --link-duplicates || die "yarn install failed!"
 
 	elif [[ -f "package-lock.json" ]]; then
 		einfo "Using npm to generate vendor dependencies"
@@ -299,7 +49,7 @@ vendor-node-modules_generate_vendor() {
 		rm -rf node_modules
 
 		# Install dependencies with npm
-		npm ci  --verbose --ignore-scripts || { eerror "npm ci failed!" ; exit 1 ; }
+		npm ci  --verbose --ignore-scripts || die "npm ci failed!"
 
 	elif [[ -f "package.json" ]]; then
 		einfo "Using npm (no lockfile) to generate vendor dependencies"
@@ -307,15 +57,15 @@ vendor-node-modules_generate_vendor() {
 		rm -rf node_modules
 
 		# Install dependencies with npm
-		npm install --verbose --ignore-scripts || { eerror "npm install failed!" ; exit 1 ; }
+		npm install --verbose --ignore-scripts || die "npm install failed!"
 
 	else
-		eerror "No package.json, pnpm-lock.yaml, yarn.lock, or package-lock.json found in ${package_dir}"
-		exit 1
+		eerror "No package.json, pnpm-lock.yaml, yarn.lock, or package-lock.json found in ${S}"
+		die "No supported package manager files found"
 	fi
 
-	popd >/dev/null
-	eend ${?} || { eerror "Generating vendor dependencies failed!" ; exit 1 ; }
+	popd >/dev/null || exit 1
+	eend ${?} || die "Generating vendor dependencies failed!"
 }
 
 # Function to clean up everything in S except node_modules
@@ -417,7 +167,7 @@ vendor-node-modules_clean_node_modules() {
 		done
 	fi
 
-	popd >/dev/null
+	popd >/dev/null || exit 1
 	eend $?
 }
 
@@ -428,31 +178,25 @@ vendor-node-modules_create_tarball() {
 	pushd "$WORKDIR" >/dev/null || { eerror "Failed to change to ${WORKDIR}"; eend 1; return 1; }
 
 	# Get the basename of the source directory (e.g., "foo-1.2.3" from "/path/to/workdir/foo-1.2.3")
-	local source_dirname=$(basename "$S")
+	local source_dirname
+	source_dirname=$(basename "$S")
 
-	# Embed the calling script within the source directory for posterity
-	cp "${0}" "${source_dirname}/" || { eerror "Failed to embed script within source directory. Exiting!" ; exit 1 ; }
-	if [[ -f "$(dirname ${BASH_SOURCE})/vendor-node-modules.bashlib" ]]; then
-		cp "$(dirname ${BASH_SOURCE})/vendor-node-modules.bashlib" "${source_dirname}/" || { eerror "Failed to embed bashlib within source directory. Exiting!" ; exit 1 ; }
-	fi
-
-	# Set reproducible timestamps on embedded scripts to ensure consistent tarballs
-	touch -d "@${SOURCE_DATE_EPOCH:-${DEFAULT_DATE_EPOCH}}" "${source_dirname}/$(basename ${0})"
-	[[ -f "${source_dirname}/vendor-node-modules.bashlib" ]] && touch -d "@${SOURCE_DATE_EPOCH:-${DEFAULT_DATE_EPOCH}}" "${source_dirname}/vendor-node-modules.bashlib"
+	vendor_common_embed_scripts "${source_dirname}" "${0}" "$(dirname "${BASH_SOURCE[0]}")/{vendor-node-modules.bashlib,vendor-common.bashlib}"
 
 	# Create tarball so that node_modules is unpacked into ${S} directly
 	tar "${REPRODUCIBLE_TAR_ARGS[@]}" -caf "${dir}/${P}-vendor.tar.xz" "${source_dirname}/"
 	local tar_result=$?
 
 	popd >/dev/null || exit 1
-	eend ${tar_result} || { eerror "Creating tarball failed!" ; exit 1 ; }
+	eend ${tar_result} || die "Creating tarball failed!"
 
 	einfo "Vendor tarball created at ${dir}/${P}-vendor.tar.xz"
 }
 
 vendor-node-modules() {
 	vendor-node-modules_setup_environment "$@"
-	vendor-node-modules_detect_source_directory || { eerror "Failed to detect source directory"; exit 1; }
+	vendor_common_detect_source_directory "package.json" "pnpm-lock.yaml" "yarn.lock" "package-lock.json" ||
+		die "Failed to detect source directory"
 	vendor-node-modules_generate_vendor "$@"
 	vendor-node-modules_clean_node_modules "$@"
 	vendor-node-modules_clean_source_directory "$@"

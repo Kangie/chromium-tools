@@ -10,14 +10,14 @@ fi
 . ${SCRIPT_DIR}/make-golang-vendor.bashlib || { echo "Failed to source make-golang-vendor.bashlib!" ; exit 1 ; }
 
 # Extract version from input args
-vendor_common_extract_version "$1" "esbuild" "ESBUILD_VERSION"
+vendor_common_extract_version "$1" "app-builder" "APP_BUILDER_VERSION"
 
 # Set SOURCE_DATE_EPOCH based on GitHub tag date
-if [[ -n "$ESBUILD_VERSION" ]]; then
-	get_github_tag_date "evanw/esbuild" "v${ESBUILD_VERSION}"
+if [[ -n "$APP_BUILDER_VERSION" ]]; then
+	get_github_tag_date "develar/app-builder" "v${APP_BUILDER_VERSION}"
 fi
 
-export ESBUILD_VENDOR_TARBALL=0
+export APP_BUILDER_VENDOR_TARBALL=0
 export ABI_X86="64" # we don't want to build multiple variants & easier to glob below
 
 # Filter out the --deps/--vendor options from the arguments since we're explicitly setting the mode
@@ -34,4 +34,4 @@ for arg in "$@"; do
 	esac
 done
 
-vendor-golang --deps "${filtered_args[@]}"
+vendor-golang --vendor "${filtered_args[@]}"
