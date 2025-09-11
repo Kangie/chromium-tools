@@ -1,0 +1,35 @@
+The bug has been referenced in the following commit(s):
+
+https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=bdb379fd14bc8ba44a8ca76e0abaaac7fb44b46a
+
+commit bdb379fd14bc8ba44a8ca76e0abaaac7fb44b46a
+Author:     Pat Example <pat@example.org>
+AuthorDate: 2025-09-18 03:41:15 +0000
+Commit:     Pat Example <pat@example.org>
+CommitDate: 2025-09-18 03:47:38 +0000
+
+    www-client/google-chrome: automated update (140.0.7339.185)
+    
+    Bug: https://bugs.gentoo.org/963024
+    Signed-off-by: Pat Example <pat@example.org>
+
+ www-client/google-chrome/Manifest                                       | 2 +-
+ ...chrome-140.0.7339.127.ebuild => google-chrome-140.0.7339.185.ebuild} | 0
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+https://gitweb.gentoo.org/repo/gentoo.git/commit/?id=a497d26ed43eec34d33b85dc8bee22328bf71eb4
+
+commit a497d26ed43eec34d33b85dc8bee22328bf71eb4
+Author:     Pat Example <pat@example.org>
+AuthorDate: 2025-09-18 03:37:15 +0000
+Commit:     Pat Example <pat@example.org>
+CommitDate: 2025-09-18 03:47:38 +0000
+
+    www-client/chromium: add 140.0.7339.185
+    
+    Bug: https://bugs.gentoo.org/963024
+    Signed-off-by: Pat Example <pat@example.org>
+
+ www-client/chromium/Manifest                       |    2 +
+ www-client/chromium/chromium-140.0.7339.185.ebuild | 1647 ++++++++++++++++++++
+ 2 files changed, 1649 insertions(+)

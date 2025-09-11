@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+.coverage
+bugzilla_api_key
+
+# It's all generated anyway, don't check it in.
+data/
+!test/data

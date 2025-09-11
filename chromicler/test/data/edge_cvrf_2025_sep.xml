@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cvrf:cvrfdoc
+  xmlns:vuln="http://www.icasi.org/CVRF/schema/vuln/1.1"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:cvrf-common="http://www.icasi.org/CVRF/schema/common/1.1"
+  xmlns:prod="http://www.icasi.org/CVRF/schema/prod/1.1"
+  xmlns:scap-core="https://scap.nist.gov/schema/scap-core/1.0"
+  xmlns:cvssv2="https://scap.nist.gov/schema/cvss-v2/1.0"
+  xmlns:cpe-lang="http://cpe.mitre.org/language/2.0"
+  xmlns:sch="http://purl.oclc.org/dsdl/schematron"
+  xmlns:cvrf="http://www.icasi.org/CVRF/schema/cvrf/1.1">
+  <cvrf:DocumentTitle>September 2025 Security Updates</cvrf:DocumentTitle>
+  <cvrf:DocumentType>Security Update</cvrf:DocumentType>
+  <cvrf:DocumentPublisher Type="Vendor">
+    <cvrf:ContactDetails>secure@microsoft.com</cvrf:ContactDetails>
+    <cvrf:IssuingAuthority>The Microsoft Security Response Center (MSRC)</cvrf:IssuingAuthority>
+  </cvrf:DocumentPublisher>
+  <cvrf:DocumentTracking>
+    <cvrf:Identification>
+      <cvrf:ID>2025-Sep</cvrf:ID>
+      <cvrf:Alias>2025-Sep</cvrf:Alias>
+    </cvrf:Identification>
+    <cvrf:Status>Final</cvrf:Status>
+    <cvrf:Version>1.0</cvrf:Version>
+    <cvrf:InitialReleaseDate>2025-09-09T07:00:00</cvrf:InitialReleaseDate>
+    <cvrf:CurrentReleaseDate>2025-09-19T07:00:24</cvrf:CurrentReleaseDate>
+  </cvrf:DocumentTracking>
+  
+  <prod:ProductTree>
+    <prod:FullProductName ProductID="11655">Microsoft Edge (Chromium-based)</prod:FullProductName>
+  </prod:ProductTree>
+
+  <!-- Edge CVE-2025-53791: Security Feature Bypass -->
+  <vuln:Vulnerability Ordinal="1">
+    <vuln:Title>Microsoft Edge (Chromium-based) Security Feature Bypass Vulnerability</vuln:Title>
+    <vuln:Notes>
+      <vuln:Note Title="Description" Type="Description" Ordinal="0">
+        <![CDATA[<p>Improper access control in Microsoft Edge (Chromium-based) allows an unauthorized attacker to bypass a security feature over a network.</p>]]>
+      </vuln:Note>
+      <vuln:Note Title="Microsoft Edge (Chromium-based)" Ordinal="20">Microsoft Edge (Chromium-based)</vuln:Note>
+      <vuln:Note Title="Customer Action Required" Type="Other" Ordinal="40">Yes</vuln:Note>
+    </vuln:Notes>
+    <vuln:CVE>CVE-2025-53791</vuln:CVE>
+    <vuln:CWE ID="CWE-284">Improper Access Control</vuln:CWE>
+    <vuln:ProductStatuses>
+      <vuln:Status Type="Known Affected">
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Status>
+    </vuln:ProductStatuses>
+    <vuln:Threats>
+      <vuln:Threat Type="Impact">
+        <vuln:Description>Security Feature Bypass</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Severity">
+        <vuln:Description>Moderate</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Exploit Status">
+        <vuln:Description>Publicly Disclosed:No;Exploited:No;Latest Software Release:Exploitation Less Likely</vuln:Description>
+      </vuln:Threat>
+    </vuln:Threats>
+    <vuln:CVSSScoreSets>
+      <vuln:ScoreSet>
+        <vuln:BaseScore>4.7</vuln:BaseScore>
+        <vuln:TemporalScore>4.1</vuln:TemporalScore>
+        <vuln:Vector>CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N/E:U/RL:O/RC:C</vuln:Vector>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:ScoreSet>
+    </vuln:CVSSScoreSets>
+    <vuln:Remediations>
+      <vuln:Remediation Type="Vendor Fix">
+        <vuln:Description>Release Notes</vuln:Description>
+        <vuln:URL />
+        <vuln:ProductID>11655</vuln:ProductID>
+        <vuln:AffectedFiles />
+        <vuln:RestartRequired>No</vuln:RestartRequired>
+        <vuln:SubType>Security Update</vuln:SubType>
+        <vuln:FixedBuild>140.0.3485.54</vuln:FixedBuild>
+      </vuln:Remediation>
+      <vuln:Remediation Type="Release Notes">
+        <vuln:URL>https://docs.microsoft.com/en-us/DeployEdge/microsoft-edge-relnotes-security</vuln:URL>
+        <vuln:ProductID>11655</vuln:ProductID>
+        <vuln:AffectedFiles />
+        <vuln:SubType>Release Notes</vuln:SubType>
+      </vuln:Remediation>
+    </vuln:Remediations>
+  </vuln:Vulnerability>
+
+  <!-- Edge CVE-2025-10585: Type Confusion in V8 (exploited in the wild) -->
+  <vuln:Vulnerability Ordinal="2">
+    <vuln:Title>Chromium: CVE-2025-10585 Type Confusion in V8</vuln:Title>
+    <vuln:Notes>
+      <vuln:Note Title="Description" Type="Description" Ordinal="0">
+        <![CDATA[<p>This CVE was assigned by Chrome. Microsoft Edge (Chromium-based) ingests Chromium, which addresses this vulnerability. Please see <a href="https://chromereleases.googleblog.com">Google Chrome Releases</a> for more information. Google is aware that an exploit for CVE-2025-10585 exists in the wild.</p>
+<p>The vulnerability assigned to this CVE is in Chromium Open Source Software (OSS) which is consumed by Microsoft Edge (Chromium-based). It is being documented in the Security Update Guide to announce that the latest version of Microsoft Edge (Chromium-based) is no longer vulnerable.</p>]]>
+      </vuln:Note>
+      <vuln:Note Title="FAQ" Type="FAQ" Ordinal="10">
+        <![CDATA[<p><strong>What is the version information for this release?</strong></p>
+<table>
+<thead>
+<tr>
+<th>Microsoft Edge Version</th>
+<th>Date Released</th>
+<th>Based on Chromium Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>140.0.3485.52</td>
+<td>September 5, 2025</td>
+<td>140.0.3485.52</td>
+</tr>
+</tbody>
+</table>]]>
+      </vuln:Note>
+      <vuln:Note Title="Microsoft Edge (Chromium-based)" Ordinal="20">Microsoft Edge (Chromium-based)</vuln:Note>
+    </vuln:Notes>
+    <vuln:CVE>CVE-2025-10585</vuln:CVE>
+    <vuln:CWE ID="CWE-843">Type Confusion</vuln:CWE>
+    <vuln:ProductStatuses>
+      <vuln:Status Type="Known Affected">
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Status>
+    </vuln:ProductStatuses>
+    <vuln:Threats>
+      <vuln:Threat Type="Impact">
+        <vuln:Description>Remote Code Execution</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Severity">
+        <vuln:Description>Important</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Exploit Status">
+        <vuln:Description>Publicly Disclosed:Yes;Exploited:Yes;Latest Software Release:Exploitation Detected</vuln:Description>
+      </vuln:Threat>
+    </vuln:Threats>
+    <vuln:CVSSScoreSets>
+      <vuln:ScoreSet>
+        <vuln:BaseScore>8.8</vuln:BaseScore>
+        <vuln:TemporalScore>8.4</vuln:TemporalScore>
+        <vuln:Vector>CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H/E:H/RL:O/RC:C</vuln:Vector>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:ScoreSet>
+    </vuln:CVSSScoreSets>
+    <vuln:Remediations>
+      <vuln:Remediation Type="Vendor Fix">
+        <vuln:Description>Release Notes</vuln:Description>
+        <vuln:URL />
+        <vuln:ProductID>11655</vuln:ProductID>
+        <vuln:AffectedFiles />
+        <vuln:RestartRequired>No</vuln:RestartRequired>
+        <vuln:SubType>Security Update</vuln:SubType>
+        <vuln:FixedBuild>140.0.3485.52</vuln:FixedBuild>
+      </vuln:Remediation>
+    </vuln:Remediations>
+  </vuln:Vulnerability>
+
+  <!-- Edge CVE-2025-10200: Remote Code Execution -->
+  <vuln:Vulnerability Ordinal="3">
+    <vuln:Title>Microsoft Edge (Chromium-based) Remote Code Execution Vulnerability</vuln:Title>
+    <vuln:Notes>
+      <vuln:Note Title="Description" Type="Description" Ordinal="0">
+        <![CDATA[<p>This CVE was assigned by Chrome. Microsoft Edge (Chromium-based) ingests Chromium, which addresses this vulnerability. Please see <a href="https://chromereleases.googleblog.com">Google Chrome Releases</a> for more information.</p>
+<p>The vulnerability assigned to this CVE is in Chromium Open Source Software (OSS) which is consumed by Microsoft Edge (Chromium-based). It is being documented in the Security Update Guide to announce that the latest version of Microsoft Edge (Chromium-based) is no longer vulnerable.</p>]]>
+      </vuln:Note>
+      <vuln:Note Title="Microsoft Edge (Chromium-based)" Ordinal="20">Microsoft Edge (Chromium-based)</vuln:Note>
+    </vuln:Notes>
+    <vuln:CVE>CVE-2025-10200</vuln:CVE>
+    <vuln:CWE ID="CWE-416">Use After Free</vuln:CWE>
+    <vuln:ProductStatuses>
+      <vuln:Status Type="Known Affected">
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Status>
+    </vuln:ProductStatuses>
+    <vuln:Threats>
+      <vuln:Threat Type="Impact">
+        <vuln:Description>Remote Code Execution</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Severity">
+        <vuln:Description>High</vuln:Description>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:Threat>
+      <vuln:Threat Type="Exploit Status">
+        <vuln:Description>Publicly Disclosed:No;Exploited:No;Latest Software Release:Exploitation Less Likely</vuln:Description>
+      </vuln:Threat>
+    </vuln:Threats>
+    <vuln:CVSSScoreSets>
+      <vuln:ScoreSet>
+        <vuln:BaseScore>7.5</vuln:BaseScore>
+        <vuln:TemporalScore>6.8</vuln:TemporalScore>
+        <vuln:Vector>CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H/E:U/RL:O/RC:C</vuln:Vector>
+        <vuln:ProductID>11655</vuln:ProductID>
+      </vuln:ScoreSet>
+    </vuln:CVSSScoreSets>
+    <vuln:Remediations>
+      <vuln:Remediation Type="Vendor Fix">
+        <vuln:Description>Release Notes</vuln:Description>
+        <vuln:URL />
+        <vuln:ProductID>11655</vuln:ProductID>
+        <vuln:AffectedFiles />
+        <vuln:RestartRequired>No</vuln:RestartRequired>
+        <vuln:SubType>Security Update</vuln:SubType>
+        <vuln:FixedBuild>140.0.3485.58</vuln:FixedBuild>
+      </vuln:Remediation>
+    </vuln:Remediations>
+  </vuln:Vulnerability>
+
+</cvrf:cvrfdoc>

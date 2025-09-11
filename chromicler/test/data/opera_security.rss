@@ -1,0 +1,974 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Opera Security</title>
+	<atom:link href="https://blogs.opera.com/security/feed/" rel="self" type="application/rss+xml" />
+	<link>https://blogs.opera.com/security/</link>
+	<description></description>
+	<lastBuildDate>Thu, 17 Jul 2025 20:37:54 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=6.8.1</generator>
+	<item>
+		<title>Update your browser: Security fix for Chrome zero-day CVE-2025-6558</title>
+		<link>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6558/</link>
+					<comments>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6558/#comments</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Thu, 17 Jul 2025 20:37:16 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[chromium]]></category>
+		<category><![CDATA[security]]></category>
+		<category><![CDATA[updates]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=629</guid>
+
+					<description><![CDATA[Chromium's latest release addressed new vulnerabilities. Security updates have been released for Opera - get the latest versions now.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi everyone!</p>
+
+
+
+<p>The latest patches to the Opera, Opera GX, and Opera Air address several recent vulnerabilities, including a zero-day exploit (CVE-2025-6558). We recommend updating your browsers to the latest versions or directly downloading them from our website.</p>
+
+
+
+<p>Make sure to update your browser to the latest version: </p>
+
+
+
+<ul class="wp-block-list">
+<li>Opera One (120.0.5543.93)</li>
+
+
+
+<li>Opera GX (120.0.5543.85)</li>
+
+
+
+<li>Opera Air (120.0.5543.86)</li>
+</ul>
+
+
+
+<p>If you have any trouble auto-updating, you can download the latest versions of the browsers <a href="https://www.opera.com/download" target="_blank" rel="noreferrer noopener">here</a>.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6558/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Why browsing with Opera&#8217;s VPN is safer</title>
+		<link>https://blogs.opera.com/security/2025/07/opera-vpn-is-safe/</link>
+					<comments>https://blogs.opera.com/security/2025/07/opera-vpn-is-safe/#comments</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Thu, 10 Jul 2025 15:12:51 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[news]]></category>
+		<category><![CDATA[opera-for-computers]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=263</guid>
+
+					<description><![CDATA[A virtual private network (VPN) is a great way to protect yourself online, especially on public hotspots. Opera is the first major browser to have a built-in, no-log, unlimited browser VPN that is completely free. So how can you make sure your browsing is safer with Opera’s VPN? For one thing, you don’t need any [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>A virtual private network (VPN) is a great way to protect yourself online, <a href="https://blogs.opera.com/security/2022/10/vpn-for-public-wi-fi-privacy-safety/">especially on public hotspots</a>. Opera is the first major browser to have a built-in, no-log, unlimited browser VPN that is completely free. So how can you make sure your browsing is safer with Opera’s VPN?</p>
+
+
+
+<p>For one thing, you don’t need any extra software, and you don’t need an account. Simply toggle on the VPN badge, and your Opera browser is protected by the VPN &#8211; you can surf the web normally without worrying about the security of the Wi-Fi at your favorite coffee shop. But now you are trusting Opera’s VPN instead of the public hotspot, so how do you know if it’s safer to use?</p>
+
+
+
+<h2 class="wp-block-heading" id="h-how-secure-is-opera-s-vpn">How secure is Opera’s VPN?</h2>
+
+
+
+<p>The safety and security of Opera’s VPN depend on two major factors: encryption of internet traffic to and from the VPN server and no-logging. When you enable Opera’s VPN, your browser creates a secure tunnel between you and one of our physical VPN servers, and encrypts your browser traffic with industry-standard 256-bit encryption.&nbsp;</p>
+
+
+
+<p>256-bit suggests how long the encryption key is that encrypts the data sent over the VPN connection. This is the strongest encryption available in commercial applications today, and it would take a hacker with even the fastest computer more than a billion years to break using brute-force methods. In other words, a hacker will not be able to just guess the key and gain access to your browsing data.&nbsp;</p>
+
+
+
+<p>Your connection to our secure VPN servers remains private and our no-log policy ensures that your browsing activity is never recorded or logged, making your browsing strictly your own business.</p>
+
+
+
+<h2 class="wp-block-heading">How does using a VPN protect me?</h2>
+
+
+
+<p>VPNs protect you in two major ways:</p>
+
+
+
+<p>One, they encrypt traffic between your device and the VPN server so that no one, not even your ISP (internet service provider), can see your online activity.</p>
+
+
+
+<p>And two, they disguise your IP address and location so that you cannot be identified by this data.</p>
+
+
+
+<p>Online, security and safety are often used interchangeably, but with VPN providers, safety is more than just how secure your connection to the server is. Generally, the VPN server can see your internet traffic, but a good VPN provider will never log or store this data. This means that which VPN provider you choose depends on which one you trust with your data. This should be considered when looking through free VPN providers as well as paid ones. It’s a good idea to go with a well-known and transparent provider for a free safe VPN.</p>
+
+
+
+<p>Which brings us to a very important question:</p>
+
+
+
+<h2 class="wp-block-heading">How does Opera’s VPN handle my data?</h2>
+
+
+
+<p>Opera’s VPN works in line with our <a href="https://www.opera.com/legal/privacy" target="_blank" rel="noreferrer noopener nofollow">Privacy Statement</a>, which explains exactly what using Opera’s VPN means for your privacy:</p>
+
+
+
+<p>When you use our built-in VPN service, we do not log any information related to your browsing activity and originating network address. Period.</p>
+
+
+
+<p>No logs. No tracking. What you do online is your own business.</p>
+
+
+
+<p>Of course, anyone can say that &#8211; but how can you be sure? This is where independent audits come in. Any company that operates a VPN service can (and should) bring in independent auditors who can investigate and verify that our no-log claim is true.</p>
+
+
+
+<p>To verify that Opera&#8217;s free browser VPN never logs your data, we turned to the experts: Deloitte is one of the &#8220;Big Four&#8221; international auditing companies and has performed independent no-log audits for many trusted VPN providers. </p>
+
+
+
+<p>So we gave Deloitte&#8217;s team complete access to our VPN and server infrastructure, <a href="https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/" target="_blank" rel="noreferrer noopener">and they were able to verify our claim</a>: When you use Opera&#8217;s free browser VPN, we do not log any data. In fact, a data logging function is not even built into the VPN in the first place.</p>
+
+
+
+<h2 class="wp-block-heading"><strong>And what if the government makes you give up user data from the VPN?</strong></h2>
+
+
+
+<p>Opera is based in Norway, and Norway has adopted the <a href="https://gdpr-info.eu" target="_blank" rel="noreferrer noopener nofollow">GDPR</a>. Norway’s data protection authority, <a href="https://www.datatilsynet.no/en/" target="_blank" rel="noreferrer noopener nofollow">Datatilsynet</a>, also oversees data protection in the country. As a result, we are subject to, and have to comply with, some of the strictest data protection regulations in the world.</p>
+
+
+
+<p>Government authorities or law enforcement agencies may reach out to us during the course of investigations, as they reach out to any company. When this happens, they must do so by liaising through Norwegian authorities, who then contact us. </p>
+
+
+
+<p>Since our VPN does not log any data in the first place, in all such cases we inform those authorities that we are not able to share user data because we do not have it. </p>
+
+
+
+<p>To get a better idea of how this process works, the number of such requests we receive, and how we respond, you can see our <a href="https://security.opera.com/en/opera-transparency-report" target="_blank" rel="noreferrer noopener">Transparency Report</a>, which is updated bi-annually.</p>
+
+
+
+<h2 class="wp-block-heading">But you’re offering the VPN for free. Are you doing that by monetizing my VPN data?</h2>
+
+
+
+<p>Actually, no. You see, the free VPN is not our core product. We make money through business partnerships and through advertising in our main browsers. We also provide a premium, device-wide VPN service called VPN Pro that we charge money for. And so we’re able to provide the in-browser VPN for free, and we don’t need to monetize it. So you can rest assured that we do not collect any data when you use the free VPN.</p>
+
+
+
+<h2 class="wp-block-heading">Okay, you say Opera’s VPN is safe and secure. Is there proof?</h2>
+
+
+
+<p>That’s a great question that you should absolutely be asking. When choosing any VPN, free or paid, it’s important to do your research and make sure the provider is trusted and the product is vetted by recognized reviewers and third-party auditors.</p>
+
+
+
+<p>We are very aware of this ourselves. That’s why Opera’s VPN <a href="https://blogs.opera.com/security/2022/03/operas-free-browser-vpn-completes-independent-security-audit-by-cure53/">has been audited by Cure53</a>, a renowned cybersecurity firm based in Berlin with more than 15 years of experience running software testing and code auditing.</p>
+
+
+
+<h2 class="wp-block-heading">How fast is Opera’s VPN?</h2>
+
+
+
+<p>When you enable Opera’s VPN, your browser automatically connects to the server that will provide you with the best user experience. But if you’d prefer a server in a different geographical area, simply go to your VPN settings and choose the region that you would like. With physical servers around the world, we offer users a choice between three regions: America, Asia, and Europe. The exact location of the server will affect your connection speed, especially if you choose a region that is not optimal.</p>
+
+
+
+<p>Opera’s VPN is fast and can keep up with good broadband connections. The most significant slowdown that you may experience is an increased ping (the time required to send a signal to a remote server and receive a response). Even then, the difference should only be a matter of milliseconds, a small compromise for the peace of mind that our VPN can provide.</p>
+
+
+
+<h2 class="wp-block-heading">Where do I find Opera’s free, secure VPN?</h2>
+
+
+
+<p>To enable Opera’s secure VPN, go to Settings &gt; Go to full browser settings &gt; Features &gt; VPN and turn on Enable VPN.</p>
+
+
+
+<p>When you enable the VPN, a blue badge will appear at the upper left corner of the combined address and search bar, indicating that the connection has been made. Click on the badge to see an on/off switch, information about the amount of data transferred, the virtual location, and the virtual IP address.</p>
+
+
+
+<h2 class="wp-block-heading">Okay, but this only protects my browsing in the Opera browser. What if I want to protect my entire device?</h2>
+
+
+
+<p>It’s true that our free VPN only protects your browsing within the Opera browser, and not your entire device. For those of you who need device-wide protection, we mentioned <a href="https://www.opera.com/features/vpn-pro">VPN Pro</a> before: a premium VPN offering that lets you protect up to six devices simultaneously. You can choose from private servers across 48 countries, so you can tailor your browsing to your needs.</p>
+
+
+
+<p>Our <a href="https://blogs.opera.com/desktop/2025/07/opera-revamped-vpn-pro-lightway" target="_blank" rel="noreferrer noopener">newly revamped VPN Pro</a> is equipped with the next-gen Lightway protocol, which provides increased security and privacy, while also providing better speeds and improving your device&#8217;s battery life. Lightway is open-source and has been independently audited by security experts to vouch for its security. Just like Opera’s free VPN, VPN Pro is a secure, no-log service with strong industry-standard encryption that protects your entire device.</p>
+
+
+
+<p><a href="https://www.opera.com/download" target="_blank" rel="noreferrer noopener">Download Opera</a> to try our safe VPN. Online security can seem challenging, but we’re helping to make it easier. With simplicity, safety, and speed, Opera’s secure VPN can help you protect yourself online.</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/07/opera-vpn-is-safe/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Update your browser: Security fix for Chrome zero-day CVE-2025-6554</title>
+		<link>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6554/</link>
+					<comments>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6554/#respond</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Thu, 03 Jul 2025 11:13:15 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[chromium]]></category>
+		<category><![CDATA[security]]></category>
+		<category><![CDATA[updates]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=627</guid>
+
+					<description><![CDATA[Chromium's latest release addressed new vulnerabilities. Security updates have been released for Opera - get the latest versions now.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi everyone!</p>
+
+
+
+<p>The latest patches to the Opera, Opera GX, Opera Air, and Opera for Android address several recent vulnerabilities, including a zero-day exploit (CVE-2025-6554). We recommend updating your browsers to the latest versions or directly downloading them from our website.</p>
+
+
+
+<p>Make sure to update your browser to the latest version: </p>
+
+
+
+<ul class="wp-block-list">
+<li>Opera One (120.0.5543.38)</li>
+
+
+
+<li>Opera GX (119.0.5497.163)</li>
+
+
+
+<li>Opera Air (119.0.5497.153)</li>
+
+
+
+<li>Opera for Android (90.2)</li>
+</ul>
+
+
+
+<p>If you have any trouble auto-updating, you can download the latest versions of the browsers <a href="https://www.opera.com/download" target="_blank" rel="noreferrer noopener">here</a>.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/07/update-your-browser-security-fix-for-chrome-zero-day-cve-2025-6554/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>VPNs explained: How a VPN helps keep your online life private</title>
+		<link>https://blogs.opera.com/security/2025/07/vpn-explained-how-vpn-helps-keep-private/</link>
+					<comments>https://blogs.opera.com/security/2025/07/vpn-explained-how-vpn-helps-keep-private/#respond</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Tue, 01 Jul 2025 09:04:27 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[Privacy]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[vpn]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=624</guid>
+
+					<description><![CDATA[VPNs are just one of the tools we rely on to stay private online. But many are still unsure about how it works. Let's break down the basics.]]></description>
+										<content:encoded><![CDATA[
+<p>Today, we spend more than half our lives online. So it’s only natural that we worry a lot more about online safety and privacy. VPNs are just one of the tools many internet users already rely on to stay private online. But while it’s an increasingly popular tool, many are still unsure about exactly what it does or how it works.</p>
+
+
+
+<p>At Opera, we have 30 years of experience building safe and secure browsers, so we understand that privacy is not just a feature &#8211; it’s a right. That’s why we decided to help break down what a VPN is, how it works, and when you should use one to enhance your privacy and security online.</p>
+
+
+
+<p>Incidentally, Opera makes it easy to get started with using a VPN, offering two tiers of VPN service. Opera users can use Opera’s built-in browser VPN for absolutely free, in order to protect their activity within the browser.&nbsp;</p>
+
+
+
+<p>Users who wish to protect their entire device (and five additional ones) can upgrade to the new and improved <a href="https://blogs.opera.com/desktop/2025/07/opera-revamped-vpn-pro-lightway/" target="_blank" rel="noreferrer noopener">VPN Pro, Opera’s premium VPN service based on the next-gen Lightway protocol</a>. </p>
+
+
+
+<h2 class="wp-block-heading" id="h-some-vpn-basics"><strong>Some VPN basics</strong></h2>
+
+
+
+<h3 class="wp-block-heading" id="h-what-is-a-vpn"><strong>What is a VPN?</strong></h3>
+
+
+
+<p>A virtual private network (VPN) is a protective layer between you and the internet, helping to secure your connection and enhance your online privacy. When you use a VPN, it becomes harder for others to track your online activity or gain access to your data. Essentially, it acts as a shield against cyber threats, malicious activities by third parties, and unsafe networks. </p>
+
+
+
+<h3 class="wp-block-heading" id="h-how-does-a-vpn-work"><strong>How does a VPN work?</strong></h3>
+
+
+
+<p>A VPN routes your connection through a remote server to connect to the internet, thereby masking your Internet Protocol (IP) address and disguising your location. It also encrypts your connection to prevent other parties, like your ISP (internet service provider), or even malicious actors from observing your online activity.&nbsp;</p>
+
+
+
+<h3 class="wp-block-heading" id="h-what-is-encryption"><strong>What is encryption?</strong></h3>
+
+
+
+<p>Without getting too technical, encryption is a process where data gets encoded and scrambled, making it unreadable for anyone without the encryption key. So anyone who might be able to observe your activity, whether for legitimate or illegitimate reasons, would not be able to see exactly what you are doing. Currently, one of the strongest encryption algorithms available is AES-256, and this is the encryption standard that Opera’s free built-in browser VPN uses to ensure a private and secure experience for our users.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-what-is-a-no-log-policy"><strong>What is a no-log policy?</strong></h3>
+
+
+
+<p>If you want to be confident using a VPN, you need to be sure that whoever operates the VPN servers you connect through does not log data about your activity. For this reason, it’s best to use VPNs that have a strict no-log policy to ensure your privacy. This means the VPN will not track or store your browsing information. Ideally, look out for services that have been independently audited by reputable third parties. We are proud to report that Opera’s VPN is one of them, as it has been independently audited for its no-log policy by Deloitte. Find out more about it <a href="https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/">here</a><em>.</em></p>
+
+
+
+<h2 class="wp-block-heading" id="h-when-you-should-use-a-vpn"><strong>When you should use a VPN</strong></h2>
+
+
+
+<p>VPNs can be used for making various online activities more secure, whether you’re just browsing, gaming, or handling sensitive information such as work emails and payments. A trustworthy VPN helps protect your activity and identity by making you harder to track by potential malicious actors.&nbsp;</p>
+
+
+
+<p>One of the main reasons to use a VPN is to be safer when connecting to public WiFi spots. These public networks are often less secure, and connections can be intercepted by malicious actors who can track, access, or steal your data. A VPN can offer a higher level of security and privacy in such cases.&nbsp;</p>
+
+
+
+<p>In addition, VPNs may improve your online experience by making it possible to access more organic search results or country-specific content. Some even find VPNs to be useful for streaming content from their home country while travelling.&nbsp;</p>
+
+
+
+<h2 class="wp-block-heading" id="h-comparing-vpns-with-other-privacy-tools"><strong>Comparing VPNs with other privacy tools</strong></h2>
+
+
+
+<h3 class="wp-block-heading" id="h-vpn-vs-incognito-mode"><strong>VPN vs Incognito mode</strong></h3>
+
+
+
+<p>Using incognito mode means that your browsing activity such as history, cookies, and cache are not saved locally in your browser. However, websites you connect to, and parties that can access your connection (your ISP, your network operator, any malicious actors that might be in the middle) can still observe your activity. This does not offer the same protection as a VPN, which secures your internet connection and encrypts your browsing and/or device data.&nbsp;</p>
+
+
+
+<h3 class="wp-block-heading" id="h-vpn-vs-ad-blocker"><strong>VPN vs Ad blocker</strong></h3>
+
+
+
+<p>VPNs do not act as automatic ad blockers. They are, however, often used in combination with ad blockers to minimize data collection and increase your online privacy. Ad blockers themselves can stop tracking scripts and prevent potential malicious ads from jeopardizing your privacy, but they don’t encrypt your connection nor disguise your location like a VPN does. Ad blocking usually requires separate installation of a browser extension that will block unwanted ads for you. Some browsers such as Opera offer their users native ad blocking capabilities, eliminating the need to install additional extensions.&nbsp;</p>
+
+
+
+<h2 class="wp-block-heading" id="h-tips-for-better-privacy-and-security-with-a-vpn"><strong>Tips for better privacy and security with a VPN</strong></h2>
+
+
+
+<h3 class="wp-block-heading" id="h-watch-where-you-browse"><strong>Watch where you browse</strong></h3>
+
+
+
+<p>It is true that VPNs can give you a more secure browsing experience by encrypting your internet traffic and masking your IP address. However, we still recommend that you be vigilant when downloading content or visiting suspicious websites. This is best done through inspecting each file and domain carefully to avoid exposure to malware, phishing attacks, and viruses. Another tip is to check a website’s HTTPS/SSL certificate by clicking on the padlock symbol next to the URL &#8211; which can usually tell you the website is legitimate.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-be-careful-what-information-you-share-nbsp"><strong>Be careful what information you share&nbsp;</strong></h3>
+
+
+
+<p>While it is possible to safeguard your digital identity to some extent with a VPN on, this does not mean you are always totally anonymous. Any website or social network that you log into using&nbsp; a VPN can still associate your activity with your profile on said website or network. Some of your online activity can also still be tracked through website trackers and third-party cookies. If this is a concern of yours, consider using a VPN together with a browser that gives you built-in tracker blocking and third-party cooking capabilities, such as Opera.&nbsp;</p>
+
+
+
+<h3 class="wp-block-heading" id="h-disguised-doesn-t-mean-invisible"><strong>Disguised doesn’t mean invisible</strong></h3>
+
+
+
+<p>VPNs are a great tool for reducing the amount of your data others can see. However, for functionality, analytics, and diagnostic purposes it is common for websites to detect details about your device even when you have a VPN on, blocking trackers, or have disabled cookies. For example, a website may detect your device’s screen size to be able to display a suitable layout or detect bugs. Such information is usually not enough to identify you with a large enough degree of accuracy but it demonstrates that anything you do online always leaves some traces. Remember that using a VPN is a privacy-enhancing tool, but you still need to be careful and responsible online.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/07/vpn-explained-how-vpn-helps-keep-private/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Update your browser: Security fixes for latest Chrome zero-day</title>
+		<link>https://blogs.opera.com/security/2025/06/update-your-browser-security-fixes-for-latest-chrome-zero-day-2025-06-04/</link>
+					<comments>https://blogs.opera.com/security/2025/06/update-your-browser-security-fixes-for-latest-chrome-zero-day-2025-06-04/#comments</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Thu, 05 Jun 2025 08:21:19 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[chromium]]></category>
+		<category><![CDATA[security]]></category>
+		<category><![CDATA[updates]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=620</guid>
+
+					<description><![CDATA[Chromium's latest release addressed new vulnerabilities. Security updates have been released for Opera - get the latest versions now.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi everyone!</p>
+
+
+
+<p>The latest patches to the Opera, Opera GX, Opera Air, and Opera for Android address several recent vulnerabilities, including a zero-day exploit (CVE-2025-5419). We recommend updating your browsers to the latest versions or directly downloading them from our website.</p>
+
+
+
+<p>Make sure to update your browser to the latest version: Opera browser (119.0.5497.70), Opera GX (119.0.5497.68), Opera Air (118.0.5461.137), and Opera for Android (89.5). If you have any trouble auto-updating, you can download the latest versions of the browsers <a href="https://www.opera.com/download" target="_blank" rel="noreferrer noopener">here</a>.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/06/update-your-browser-security-fixes-for-latest-chrome-zero-day-2025-06-04/feed/</wfw:commentRss>
+			<slash:comments>1</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Update your browser: Security fixes for latest Chrome zero-day</title>
+		<link>https://blogs.opera.com/security/2025/03/update-your-browser-security-fixes-for-latest-chrome-zero-day-cve-2025-2783/</link>
+					<comments>https://blogs.opera.com/security/2025/03/update-your-browser-security-fixes-for-latest-chrome-zero-day-cve-2025-2783/#comments</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Thu, 27 Mar 2025 22:10:30 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[chromium]]></category>
+		<category><![CDATA[security]]></category>
+		<category><![CDATA[updates]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=617</guid>
+
+					<description><![CDATA[Chromium's latest release addressed new vulnerabilities. Security updates have been released for Opera - get the latest versions now.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi everyone!</p>
+
+
+
+<p>The latest patches to the Opera and Opera GX address several recent vulnerabilities, including a zero-day exploit (CVE-2025-2783). We recommend updating your browsers to the latest versions or directly downloading them from our website.</p>
+
+
+
+<p>Make sure to update your browser to the latest version: Opera browser (117.0.5408.163) and Opera GX (117.0.5408.162). If you have any trouble auto-updating, you can download the latest versions of the browsers <a href="https://www.opera.com/download" target="_blank" rel="noreferrer noopener">here</a>.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/03/update-your-browser-security-fixes-for-latest-chrome-zero-day-cve-2025-2783/feed/</wfw:commentRss>
+			<slash:comments>2</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Opera for Android has received Google Play’s Independent Security Review badge. Here’s what this means for your security</title>
+		<link>https://blogs.opera.com/security/2025/01/opera-for-android-google-play-independent-security-review-badge-security/</link>
+					<comments>https://blogs.opera.com/security/2025/01/opera-for-android-google-play-independent-security-review-badge-security/#respond</comments>
+		
+		<dc:creator><![CDATA[Michael Tegos]]></dc:creator>
+		<pubDate>Thu, 30 Jan 2025 14:56:56 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[Security]]></category>
+		<category><![CDATA[independent audit]]></category>
+		<category><![CDATA[opera for android]]></category>
+		<category><![CDATA[security]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=612</guid>
+
+					<description><![CDATA[Opera for Android has achieved an important security milestone with Google Play's Independent Security review badge. Here's what to know.]]></description>
+										<content:encoded><![CDATA[
+<p>Hey Opera users!</p>
+
+
+
+<p>You might have seen that Opera for Android has achieved a new security-focused milestone: If you search for Opera for Android on the Google Play Store, you’ll notice a new <a href="https://blogs.opera.com/mobile/2025/01/opera-for-android-google-play-independent-security-review-badge/" target="_blank" rel="noreferrer noopener">Independent Security Review badge</a> in the Data Safety section of the app page. </p>
+
+
+
+<p>As part of an initiative from Google Play and the App Defense Alliance, the Independent Security Review badge is awarded to apps that undergo a Mobile Application Security Assessment (MASA) Level 2, performed by an independent security lab.</p>
+
+
+
+<p>In the case of Opera for Android, the independent review was conducted by Leviathan Security Group, a cybersecurity firm based in Seattle, WA.&nbsp;</p>
+
+
+
+<h2 class="wp-block-heading" id="h-how-the-security-assessment-process-works">How the security assessment process works</h2>
+
+
+
+<p>The <a href="https://appdefensealliance.dev/masa" target="_blank" rel="noreferrer noopener">Mobile Application Security Assessment</a> process is designed by the <a href="https://appdefensealliance.dev" target="_blank" rel="noreferrer noopener">App Defense Alliance</a>, an industry-leading collaboration launched by Google in 2019 and currently managed by The Linux Foundation, with the mission of protecting Android users from malicious apps.</p>
+
+
+
+<p>MASA has been developed according to standards set by the Open Web Application Security Project (OWASP), specifically the <a href="https://owasp.org/www-project-mobile-app-security/" target="_blank" rel="noreferrer noopener">Mobile Application Security Verification Standard</a> (MASVS), together with OWASP’s testing criteria, known as Mobile Application Security Testing Guide (MASTG). </p>
+
+
+
+<p>This extensive collection of acronyms ultimately means having a common standard for app developers to have their apps evaluated against. This helps developers to know exactly what to do to ensure a secure experience for users on the Play Store.</p>
+
+
+
+<figure class="wp-block-image"><img fetchpriority="high" decoding="async" width="954" height="535" src="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2025/01/image.png" alt="" class="wp-image-614" srcset="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2025/01/image.png 954w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2025/01/image-300x168.png 300w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2025/01/image-700x393.png 700w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2025/01/image-768x431.png 768w" sizes="(max-width: 954px) 100vw, 954px" /><figcaption class="wp-element-caption"><em>Image: App Defense Alliance</em></figcaption></figure>
+
+
+
+<p>Level 2 of the MASA process involves evaluation and testing of the live app by an independent lab. The lab performs both automated code scanning and manual assessment in order to determine whether the app meets the necessary standards. After confirmation from the lab, the evaluated app gets its “Independent Security Review” badge. </p>
+
+
+
+<h2 class="wp-block-heading" id="h-the-value-of-independent-audits-and-reviews">The value of independent audits and reviews</h2>
+
+
+
+<p>Reviews and audits performed by credible, independent parties are an extremely important part of building trust online. As technology gets more complicated and misinformation proliferates, users find it more challenging than ever to know which products and services to trust.&nbsp;</p>
+
+
+
+<p>Independent audits such as Google Play’s Independent Security Review and our <a href="https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/" target="_blank" rel="noreferrer noopener">recent no-log policy audit</a> help give you more peace of mind that your experience remains secure and private.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2025/01/opera-for-android-google-play-independent-security-review-badge-security/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>How Opera for Android’s revamped ad blocker improves your browsing experience</title>
+		<link>https://blogs.opera.com/security/2024/12/ofa-86-improved-ad-blocker/</link>
+					<comments>https://blogs.opera.com/security/2024/12/ofa-86-improved-ad-blocker/#respond</comments>
+		
+		<dc:creator><![CDATA[Opera Team]]></dc:creator>
+		<pubDate>Wed, 11 Dec 2024 09:00:04 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Privacy]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=607</guid>
+
+					<description><![CDATA[Hi Opera users! At Opera, we know how intrusive advertising can disrupt your browsing experience by turning it into a frustrating maze of pop-ups. That’s why we have included a built-in ad blocker in our browsers since 2016, giving you back control over your privacy and online peace of mind. Of course, we didn’t stop [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<p>Hi Opera users!</p>
+
+
+
+<p>At Opera, we know how intrusive advertising can disrupt your browsing experience by turning it into a frustrating maze of pop-ups. That’s why we have included a built-in ad blocker in our browsers since 2016, giving you back control over your privacy and online peace of mind.</p>
+
+
+
+<p>Of course, we didn’t stop there &#8211; we’re constantly improving our Ad Blocker to keep up with the web’s rapid changes. So, we are excited to announce the latest ad blocking features in Opera for Android 86, which streamline your online experience by making every page load faster and more smoothly.</p>
+
+
+
+<p>Our improved Ad Blocker is designed to give you more control by setting your own ad blocking preferences. Interested? Let’s dive deeper into the new features.</p>
+
+
+
+<h2 class="wp-block-heading" id="h-how-to-customize-your-ad-blocking-with-opera-for-android">How to customize your ad blocking with Opera for Android</h2>
+
+
+
+<p>On Opera for Android 86, you will be able to switch between three different modes: Balanced Mode, Enhanced Mode, and Custom Mode. These modes let you configure your ad blocker according to your needs. Let’s look at them in more detail:</p>
+
+
+
+<p><strong>Balanced Mode:</strong> Enjoy a standard approach that blocks common ads without compromising user experience. It’s well known that aggressive ad blocking can break some websites, resulting in bad experiences when shopping or banking online, for example. With version 86 of Opera for Android, we have improved Balanced Mode to provide better coverage without breaking website functionality.</p>
+
+
+
+<p><strong>Enhanced Mode:</strong> Powered by uBlock and AdGuard, this mode provides a more robust defense against intrusive ads. Enhanced Mode is the strongest your ad blocker can get but it’s worth remembering that some website compatibility may be affected. Still, this is ideal for users who want the highest level of protection against ads. </p>
+
+
+
+<p><strong>Custom Mode:</strong> This mode gives you more control with the ability to select from six curated block lists:</p>
+
+
+
+<ol class="wp-block-list"></ol>
+
+
+
+<ul class="wp-block-list">
+<li>EasyList</li>
+
+
+
+<li>uBlock</li>
+
+
+
+<li>AdGuard</li>
+
+
+
+<li>AdGuard Mobile Ads</li>
+
+
+
+<li>Site fixes</li>
+
+
+
+<li>NoCoin</li>
+</ul>
+
+
+
+<p>plus specialized regional options. This mode helps you curate your digital experience precisely the way you want.</p>
+
+
+
+<p>The new ad blocking modes deliver a smoother, cleaner, and more secure web experience whether you choose to aggressively block ads or you prefer a more balanced experience. To choose your preferred ad blocking mode, go to Settings &gt; Ad Blocking &gt; Ad Blocking Mode.</p>
+
+
+
+<h2 class="wp-block-heading" id="h-why-does-using-an-ad-blocker-matter">Why does using an ad blocker matter?</h2>
+
+
+
+<p>If you’re already using Opera’s built-in Ad Blocker, or an ad blocker of your choice, you already know the benefits. If you’re not, though, here’s a few reasons why you might want to try it:</p>
+
+
+
+<h3 class="wp-block-heading" id="h-faster-page-loads">Faster Page Loads</h3>
+
+
+
+<p>Ads, particularly those with heavy images, complex animations, or auto-play videos, can significantly slow down websites. By blocking these ads before they load, pages load more quickly, letting you reach the content you care about faster.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-less-clutter">Less Clutter</h3>
+
+
+
+<p>Nothing is more annoying than being flooded with pop-ups, banners, and videos that take over your screen. These distractions not only disrupt your flow but can also make web pages harder to navigate. Ad blocking spares you these unnecessary elements by creating a cleaner and more convenient browsing environment.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-reduced-data-use">Reduced Data Use</h3>
+
+
+
+<p>For mobile users, every megabyte counts. Ads can consume large amounts of data, especially when they contain high-resolution images, video content, or interactive material. Blocking these ads helps you save data, making it essential for those on limited data plans or tight bandwidth. It also helps you browse faster, so you can do more with less.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-better-focus">Better Focus</h3>
+
+
+
+<p>With fewer interruptions from irrelevant ads, it becomes easier to focus on the content you’re truly interested in. Whether you&#8217;re watching a video, reading an article, or shopping online, blocking ads ensures that your concentration stays on the page&#8217;s main subject, not on distracting ads. This way, you will enjoy a more productive and stress-free browsing session, no matter if you&#8217;re just chilling or getting things done.</p>
+
+
+
+<h2 class="wp-block-heading" id="h-how-ad-blocking-improves-your-privacy">How ad blocking improves your privacy</h2>
+
+
+
+<p>When it comes to browsing safely and privately, our Ad Blocker is more than just a tool for clearing irritating ads. It’s also a strong ally in protecting your digital privacy. Here’s how:</p>
+
+
+
+<h3 class="wp-block-heading" id="h-protection-from-tracking">Protection from tracking</h3>
+
+
+
+<p>Each time you visit a website, advertisers and third-parties are eager to track your moves. They can collect your browsing data to create a profile and serve you personalized ads. By combining Opera&#8217;s built-in Ad Blocker and Tracker Blocker, you can avoid extensive tracking and ensure that your browsing activity stays private.</p>
+
+
+
+<h3 class="wp-block-heading" id="h-enhanced-security">Enhanced security</h3>
+
+
+
+<p>Malicious ads are an actual threat. Some pop-up or banner ads can hold hidden malware, leading to phishing attempts or other security risks. Our Ad Blocker helps shield you from these harmful ads, reducing your vulnerability to threats that could compromise your personal information. By blocking these ads before they load, you can browse knowing you’re better protected against such threats.</p>
+
+
+
+<p>These are some of the ways ad blocking can improve your online experience, minimizing distractions and boosting your online privacy and security. Learn more about Opera for Android 86 and how to get the latest ad blocking features <a href="https://blogs.opera.com/mobile/2024/12/opera-for-android-86-new-app-icons-smarter-downloads-and-enhanced-ad-blocker/" target="_blank" rel="noreferrer noopener">on our Mobile blog</a>.</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2024/12/ofa-86-improved-ad-blocker/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Addressing the &#8220;CrossBarking&#8221; vulnerability discovered in collaboration with Guardio</title>
+		<link>https://blogs.opera.com/security/2024/10/vulnerability-opera-guardio/</link>
+					<comments>https://blogs.opera.com/security/2024/10/vulnerability-opera-guardio/#respond</comments>
+		
+		<dc:creator><![CDATA[Michael Tegos]]></dc:creator>
+		<pubDate>Wed, 30 Oct 2024 13:00:00 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[News]]></category>
+		<category><![CDATA[Security]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=601</guid>
+
+					<description><![CDATA[In an instance of responsible disclosure, Guardio discovered a now-fixed vulnerability they called CrossBarking, that could affect add-on users.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi Opera users!</p>
+
+
+
+<p>Over time, we have shared details about <a href="https://security.opera.com/en/policy/" target="_blank" rel="noreferrer noopener">how we approach security vulnerabilities</a>, and especially how we work with external security researchers to identify and fix them before they have a chance to be exploited by bad actors. This is called responsible disclosure and it is a best practice in cybersecurity, helping software providers stay ahead of threats and allowing researchers to showcase their good work and raise awareness around cybersecurity challenges.&nbsp;</p>
+
+
+
+<p>Recently, we collaborated with cybersecurity researcher Guardio on a vulnerability they called &#8220;CrossBarking&#8221;, which depends on the user installing a malicious extension in the browser from outside Opera’s Add-ons Store. This is a very specific scenario that limits the number of users that could be affected because it relies on users being tricked into downloading a malicious extension from a third party store &#8211; where Opera cannot vouch for the integrity of extensions.</p>
+
+
+
+<p>Nevertheless, the attack exploited a weakness in our own add-on infrastructure, so it was imperative to fix the vulnerability promptly. Our team collaborated with Guardio to address this and the fix was deployed on September 24, 2024. To our knowledge, no Opera user had been affected by this vulnerability before it was patched.</p>
+
+
+
+<p><strong>How the vulnerability worked</strong></p>
+
+
+
+<p>The vulnerability took advantage of the way web apps access Private APIs within the browser to power special features. This is a standard process in browsers as they get more powerful and are able to provide more functionality to users.</p>
+
+
+
+<p>Guardio discovered that a malicious extension could potentially exploit this process. They successfully published such an extension on the Chrome Web Store, disguising it as a friendly-looking app. How friendly-looking? It promised to place a puppy on every web page the user visited &#8211; just to make it that much more irresistible!&nbsp;</p>
+
+
+
+<p>From there, a user would have to be tricked into opening themselves up to attack by:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Downloading and installing the extension in Opera from the Chrome Web Store</li>
+
+
+
+<li>Confirming they were OK with Opera’s warning that the extension comes from outside Opera’s Add-ons Store and as such has not been reviewed by Opera</li>
+</ul>
+
+
+<div class="wp-block-image">
+<figure class="aligncenter size-full"><img decoding="async" width="437" height="269" src="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/10/Screenshot-2024-10-18-at-12.42.07.png" alt="" class="wp-image-603" srcset="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/10/Screenshot-2024-10-18-at-12.42.07.png 437w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/10/Screenshot-2024-10-18-at-12.42.07-300x185.png 300w" sizes="(max-width: 437px) 100vw, 437px" /></figure></div>
+
+
+<p><strong>Why manual review of extensions matters</strong></p>
+
+
+
+<p>Why did Guardio’s attack method require publishing an extension on the Chrome Web Store instead of Opera’s own Add-ons Store? That’s because Opera’s Add-ons Store is unique in applying exclusively manual review of all extensions hosted in it &#8211; specifically to stop such malicious extensions from ever reaching users.&nbsp;</p>
+
+
+
+<p>Although Opera users can install extensions from third-party extension stores, it’s not possible for us to control the security of extensions published in such stores. We typically recommend using our own Add-ons Store, where each extension has been thoroughly checked by humans before being allowed in.</p>
+
+
+
+<p>Following Guardio’s findings, our team collaborated with them to fix the &#8220;CrossBarking&#8221; vulnerability. As a next step, we will also be reviewing the way that web app features are enabled in the browser to avoid similar issues in the future. </p>
+
+
+
+<p>If you notice any vulnerabilities in Opera, you can reach out to us – find information on how to do that <a href="https://security.opera.com/en/">here</a>. We also have a bug bounty program, which you can check out <a href="https://bugcrowd.com/opera">here</a>. And of course, make sure to have the latest updates in your software installed – this is the best way to ensure you are protected!</p>
+
+
+
+<p>As always, stay safe out there!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2024/10/vulnerability-opera-guardio/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+		<item>
+		<title>Protecting your privacy: Opera has completed an independent no-log audit of its free browser VPN</title>
+		<link>https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/</link>
+					<comments>https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/#respond</comments>
+		
+		<dc:creator><![CDATA[Michael Tegos]]></dc:creator>
+		<pubDate>Wed, 25 Sep 2024 11:56:22 +0000</pubDate>
+				<category><![CDATA[Front page]]></category>
+		<category><![CDATA[Privacy]]></category>
+		<guid isPermaLink="false">https://blogs.opera.com/security/?p=593</guid>
+
+					<description><![CDATA[Opera's free browser VPN for Opera, Opera GX, and Opera for Android and iOS has completed an independent no-log audit by trusted auditor Deloitte.]]></description>
+										<content:encoded><![CDATA[
+<p>Hi Opera users!</p>
+
+
+
+<p>We are excited to announce that we have successfully completed an independent audit of our no-log policy for Opera’s free browser VPN available on Opera, Opera GX, and Opera for Android and iOS. The audit was conducted by Deloitte &#8211; an independent and respected auditor of several trusted VPN providers &#8211; and the result certifies that your data is not logged or stored when you use the VPN.</p>
+
+
+
+<p>Privacy and trust are some of the most important factors when users choose online products and services. Opera has recognized this for a long time, which is why we’ve been the first to introduce <a href="https://blogs.opera.com/security/2023/08/how-opera-protects-from-spyware/">built-in privacy features</a> that help users protect themselves online. Our free browser VPN is one of the key tools we make available to our users for this purpose.</p>
+
+
+
+<p>When you install Opera’s browsers, you have access to our free browser VPN out of the box &#8211; there is no need for registering, or for providing any data about yourself. When activated, the service protects the browser by routing your connection through a secure, encrypted tunnel to Opera’s servers and from there to the internet, disguising your location at the same time. This way, websites have no way of knowing who you are or where you are visiting from.</p>
+
+
+
+<h2 class="wp-block-heading" id="h-why-is-a-no-log-policy-important">Why is a no-log policy important?</h2>
+
+
+
+<p>For a VPN service to fully protect your privacy, it must also be no-log. This means that the server routing the traffic must not log nor store any data about your activity or where you are connecting from &#8211; so that not even the company providing the VPN service can know what you are doing. When you use a VPN, you want to be sure that your browsing is your business, and yours alone. Opera’s free browser VPN works exactly like that &#8211; it’s a no-log service that holds no data about your activity.&nbsp;</p>
+
+
+
+<p>Our <a href="https://legal.opera.com/privacy/">Privacy Statement</a> already makes this clear. Having said that, we recognize that when you read our Privacy Statement and choose to use our products, you place your trust in us. So in order to back up our claims, we turned to the experts.&nbsp;</p>
+
+
+
+<p>Deloitte is a respected auditor with a long history, and has conducted no-log audits of several trusted VPN providers. Deloitte’s proven technical expertise and methodical approach made them the ideal auditor to review our VPN service.</p>
+
+
+<div class="wp-block-image">
+<figure class="alignleft size-large"><img decoding="async" width="700" height="771" src="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43-700x771.jpg" alt="" class="wp-image-595" srcset="https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43-700x771.jpg 700w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43-273x300.jpg 273w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43-768x845.jpg 768w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43-1395x1536.jpg 1395w, https://www-static-blogs.operacdn.com/security/wp-content/uploads/sites/6/2024/09/Screenshot-2024-09-25-at-00.37.43.jpg 1586w" sizes="(max-width: 700px) 100vw, 700px" /></figure></div>
+
+
+<h2 class="wp-block-heading" id="h-what-was-tested">What was tested</h2>
+
+
+
+<p>For testing purposes, we granted Deloitte access to our free browser VPN infrastructure for Desktop, Android, and iOS, from 18 June to 10 August 2024. Deloitte’s team ran through a series of tests that included:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Inspection of Opera’s VPN infrastructure and IT systems</li>
+
+
+
+<li>Review of server configuration and deployment process</li>
+
+
+
+<li>Review of relevant system descriptions, documentation, and policies provided by Opera</li>
+
+
+
+<li>Review of Opera’s Privacy Statement</li>
+
+
+
+<li>Inquiries with relevant Opera employees</li>
+</ul>
+
+
+
+<p>Upon completion of all testing, Deloitte reported the following: “Based on the procedures performed and the evidence obtained, in our opinion, the configuration of IT systems and management of the supporting IT operations was suitably designed and implemented, in all material respects, based on the criteria described in Opera’s Management Assertion, as of 10th August 2024.”</p>
+
+
+
+<p>Our Management Assertion, included in the report, states, among other things: “There is no data logging functionality built into the VPN service, and no data whatsoever is collected about users’ browsing activity, browsing history, originating network address, or other identifying information.”</p>
+
+
+
+<h2 class="wp-block-heading" id="h-was-vpn-pro-part-of-the-audit">Was VPN Pro part of the audit?</h2>
+
+
+
+<p>VPN Pro is also a no-log service. However, VPN Pro servers are provided in collaboration with Nord, which has already been audited for its no-log policy and is a trusted VPN provider. Unlike VPN Pro, Opera’s free browser VPN uses Opera’s own server infrastructure, which is now covered by this audit.</p>
+
+
+
+<h2 class="wp-block-heading" id="h-what-this-means-for-you">What this means for you</h2>
+
+
+
+<p>Simply put, it means that when you use our free browser VPN, you can be confident that we don’t collect any data about your activity in the browser, for any purpose. No matter which Opera browser you use (Opera, Opera GX, or Opera for Android or iOS), your browsing is completely anonymous and encrypted, so no one can see which websites you visit or what you are doing &#8211; not your ISP, not the router administrator at your favorite cafe, not even Opera.</p>
+
+
+
+<p>Third-party reviews and audits are a valuable tool that users can benefit from when choosing a trustworthy VPN provider. Successfully completing this audit means that users of Opera’s free browser VPN have an additional guarantee that their data is secure and their browsing is safe from anyone’s prying eyes.&nbsp;</p>
+
+
+
+<p>Our free browser VPN previously <a href="https://blogs.opera.com/security/2022/03/operas-free-browser-vpn-completes-independent-security-audit-by-cure53/">successfully completed a security audit</a> by notable Berlin-based security researcher Cure53. The new successful no-log audit by Deloitte complements this effort and goes one step further towards guaranteeing the safety and security of our VPN products.</p>
+
+
+
+<p>If you have any questions, <a href="https://blogs.opera.com/security/2023/09/where-to-find-operas-privacy-and-security-team-online/">feel free to contact our Security team</a>.</p>
+
+
+
+<p>As always, stay safe everyone!</p>
+]]></content:encoded>
+					
+					<wfw:commentRss>https://blogs.opera.com/security/2024/09/opera-free-browser-vpn-no-log-audit-deloitte/feed/</wfw:commentRss>
+			<slash:comments>0</slash:comments>
+		
+		
+			</item>
+	</channel>
+</rss>
