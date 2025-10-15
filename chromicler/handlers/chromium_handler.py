@@ -1385,9 +1385,9 @@ This bug was automatically created based on Chrome stable release information.
                     )
                     # Check existing bugs
                     existing_bugs = self.bugzilla.check_existing_bugs_for_cves(cves)
-                    for cve, bug in existing_bugs.items():
-                        if bug:
-                            bug_url = f"https://bugs.gentoo.org/{bug.id}"
+                    for cve, bug_id in existing_bugs.items():
+                        if bug_id:
+                            bug_url = f"https://bugs.gentoo.org/{bug_id}"
                             bug_urls.append(bug_url)
                             self.logger.info(f"Linking bug for {cve}", url=bug_url)
             except Exception as e:
@@ -1423,11 +1423,10 @@ This bug was automatically created based on Chrome stable release information.
         Returns:
             List of CVE IDs
         """
-        # Parse recent releases to find CVEs for this version
         releases = self.parse_chrome_releases(limit_releases=10)
 
         for release in releases:
-            if release.get("version") == version:
+            if release.get("linux_version") == version:
                 return release.get("cves", [])
 
         return []

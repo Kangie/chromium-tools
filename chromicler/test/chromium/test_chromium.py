@@ -773,11 +773,11 @@ class TestChromiumHandlerGetCVEsForVersion:
         mock_parse = mocker.patch.object(chromium_handler, "parse_chrome_releases")
         mock_parse.return_value = [
             {
-                "version": "141.0.0.0",
+                "linux_version": "141.0.0.0",
                 "cves": ["CVE-2025-0001", "CVE-2025-0002"],
             },
             {
-                "version": "140.0.0.0",
+                "linux_version": "140.0.0.0",
                 "cves": ["CVE-2024-9999"],
             },
         ]
@@ -790,7 +790,7 @@ class TestChromiumHandlerGetCVEsForVersion:
         """Test getting CVEs when version is not found."""
         mock_parse = mocker.patch.object(chromium_handler, "parse_chrome_releases")
         mock_parse.return_value = [
-            {"version": "140.0.0.0", "cves": ["CVE-2024-9999"]},
+            {"linux_version": "140.0.0.0", "cves": ["CVE-2024-9999"]},
         ]
 
         cves = chromium_handler._get_cves_for_chrome_version("141.0.0.0")
@@ -801,7 +801,7 @@ class TestChromiumHandlerGetCVEsForVersion:
         """Test getting CVEs when release has no CVEs key."""
         mock_parse = mocker.patch.object(chromium_handler, "parse_chrome_releases")
         mock_parse.return_value = [
-            {"version": "141.0.0.0"},  # No 'cves' key
+            {"linux_version": "141.0.0.0"},  # No 'cves' key
         ]
 
         cves = chromium_handler._get_cves_for_chrome_version("141.0.0.0")

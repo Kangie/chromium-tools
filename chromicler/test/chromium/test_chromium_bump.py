@@ -104,11 +104,10 @@ class TestChromiumBump:
 
     def test_get_cves_for_chrome_version(self, handler, mocker):
         """Test CVE extraction from release blog."""
-        # Mock parse_chrome_releases to return a release with CVEs
         mock_parse = mocker.patch.object(handler, "parse_chrome_releases")
         mock_parse.return_value = [
             {
-                "version": "141.0.6778.108",
+                "linux_version": "141.0.6778.108",
                 "cves": ["CVE-2025-0001", "CVE-2025-0002", "CVE-2025-0003"],
                 "title": "Stable Channel Update",
                 "date": "2025-01-15",
@@ -117,7 +116,6 @@ class TestChromiumBump:
 
         cves = handler._get_cves_for_chrome_version("141.0.6778.108")
 
-        # Should find all three CVEs
         assert "CVE-2025-0001" in cves
         assert "CVE-2025-0002" in cves
         assert "CVE-2025-0003" in cves
@@ -632,10 +630,8 @@ class TestChromiumBumpChromeIntegration:
         )
 
         # Mock existing bugs
-        mock_bug = mocker.Mock()
-        mock_bug.id = 999999
         handler.bugzilla.check_existing_bugs_for_cves.return_value = {
-            "CVE-2025-0001": mock_bug
+            "CVE-2025-0001": 999999
         }
 
         # Run bump_chrome with link_bugs enabled
