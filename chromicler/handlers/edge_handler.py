@@ -472,7 +472,23 @@ class EdgeHandler:
                 new_title = self._add_edge_constraint_to_title(
                     bug.summary, latest_version
                 )
-                comment = f"Edge version constraint added automatically: <www-client/microsoft-edge-{latest_version}"
+
+                # Build comment with MSRC vulnerability URLs
+                comment_lines = [
+                    f"Edge version constraint added automatically: <www-client/microsoft-edge-{latest_version}",
+                    "",
+                    "MSRC vulnerability information:",
+                ]
+
+                # Add MSRC URLs for each CVE that exists in MSRC
+                # MSRC URLs should be added to see_also; however this cannot be done until https://bugs.gentoo.org/964378 is resolved
+                cves_with_msrc = [data["cve"] for data in edge_data]
+                for cve in cves:
+                    if cve in cves_with_msrc:
+                        msrc_url = f"https://msrc.microsoft.com/update-guide/vulnerability/{cve}"
+                        comment_lines.append(f" * {cve}: {msrc_url}")
+
+                comment = "\n".join(comment_lines)
 
                 if dry_run:
                     self.logger.info(

@@ -514,6 +514,15 @@ class TestEdgeHandlerBugUpdates:
         assert result["errors"] == 0
         mock_bugzilla_client.update_bug.assert_called_once()
 
+        # Verify the comment includes MSRC URL
+        call_args = mock_bugzilla_client.update_bug.call_args
+        comment = call_args[1]["comment"]
+        assert "MSRC vulnerability information:" in comment
+        assert (
+            "CVE-2025-10200: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-10200"
+            in comment
+        )
+
     def test_update_specific_bugs_already_constrained(
         self, edge_handler, mock_bugzilla_client, mocker
     ):
@@ -582,6 +591,51 @@ class TestEdgeHandlerBugUpdates:
         assert result["errors"] == 0
         # Should not call update_bug in dry run mode
         mock_bugzilla_client.update_bug.assert_not_called()
+
+    def test_update_specific_bugs_filters_non_msrc_cves(
+        self, edge_handler, mock_bugzilla_client, mocker
+    ):
+        """Test that only CVEs found in MSRC get MSRC URLs in comment."""
+        # Setup mock bug with multiple CVEs
+        mock_bug = mocker.Mock()
+        mock_bug.id = 12345
+        mock_bug.summary = "Security issue in www-client/microsoft-edge"
+        mock_bug.alias = ["CVE-2025-10200", "CVE-2025-10201", "CVE-2025-10202"]
+        mock_bugzilla_client.bzapi.getbug.return_value = mock_bug
+
+        # Mock query - only 2 of 3 CVEs found in MSRC
+        mock_query = mocker.patch.object(edge_handler, "query_edge_cves")
+        mock_query.return_value = [
+            {
+                "cve": "CVE-2025-10200",
+                "title": "Test CVE 1",
+                "fixed_version": "140.0.3485.58",
+            },
+            {
+                "cve": "CVE-2025-10202",
+                "title": "Test CVE 2",
+                "fixed_version": "140.0.3485.58",
+            },
+            # CVE-2025-10201 is NOT in MSRC data
+        ]
+
+        result = edge_handler._update_specific_bugs([12345], dry_run=False)
+
+        assert result["updated"] == 1
+
+        # Verify the comment only includes MSRC URLs for CVEs that exist in MSRC
+        call_args = mock_bugzilla_client.update_bug.call_args
+        comment = call_args[1]["comment"]
+        assert "MSRC vulnerability information:" in comment
+        assert (
+            "CVE-2025-10200: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-10200"
+            in comment
+        )
+        assert (
+            "CVE-2025-10202: https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-10202"
+            in comment
+        )
+        assert "CVE-2025-10201" not in comment  # This CVE should NOT be in the comment
 
 
 class TestEdgeHandlerIntegration:
