@@ -1887,7 +1887,7 @@ class OperaHandler:
             logger=self.logger,
             get_ebuild_version_func=self._get_ebuild_version,
             get_prev_channel_func=self._get_prev_channel,
-            enable_stabilization=True,
+            enable_stabilisation=True,
         )
 
     def _remove_old_opera_versions(

@@ -252,7 +252,7 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=False,
+            enable_stabilisation=False,
         )
 
         # Verify bump_ebuild was called correctly
@@ -306,7 +306,7 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=False,
+            enable_stabilisation=False,
         )
 
         # Verify source is from beta channel
@@ -351,7 +351,7 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=False,
+            enable_stabilisation=False,
         )
 
         # Verify metadata.xml was copied
@@ -363,10 +363,10 @@ class TestBumpBrowserPackage:
         # Verify it was added to git index
         mock_ebuild_mgr.repo.index.add.assert_called()
 
-    def test_stabilization_workflow(
+    def test_stabilisation_workflow(
         self, mock_ebuild_mgr, mock_logger, mock_repo_path, mocker
     ):
-        """Test two-phase stabilization workflow for stable channel."""
+        """Test two-phase stabilisation workflow for stable channel."""
         # Mock subprocess.check_call
         mock_subprocess = mocker.patch("subprocess.check_call")
         # Create ebuild file for testing
@@ -415,7 +415,7 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=True,
+            enable_stabilisation=True,
         )
 
         # Verify ekeyword was called
@@ -428,10 +428,10 @@ class TestBumpBrowserPackage:
         commit_args = mock_ebuild_mgr.repo.git.commit.call_args
         assert "amd64 stable" in str(commit_args)
 
-    def test_no_stabilization_for_beta_channel(
+    def test_no_stabilisation_for_beta_channel(
         self, mock_ebuild_mgr, mock_logger, mock_repo_path, mocker
     ):
-        """Test that stabilization is not performed for non-stable channels."""
+        """Test that stabilisation is not performed for non-stable channels."""
         # Mock subprocess.check_call
         mock_subprocess = mocker.patch("subprocess.check_call")
 
@@ -462,7 +462,7 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=True,
+            enable_stabilisation=True,
         )
 
         # Verify ekeyword was NOT called
@@ -511,8 +511,63 @@ class TestBumpBrowserPackage:
             logger=mock_logger,
             get_ebuild_version_func=get_ebuild_version,
             get_prev_channel_func=get_prev_channel,
-            enable_stabilization=False,
+            enable_stabilisation=False,
         )
 
         # Verify metadata was not created (dry run)
         assert not target_metadata.exists()
+
+    def test_no_stabilisation_for_same_channel_bump(
+        self, mock_ebuild_mgr, mock_logger, mock_repo_path, mocker
+    ):
+        """Test that stabilisation is skipped for same-channel stable bumps.
+
+        When bumping stable 141.0.3537.71 -> 141.0.3537.99 (both in stable channel),
+        the keywords are already correct (~amd64 or amd64) from the source ebuild,
+        so we should not run ekeyword or attempt to commit keyword changes.
+        """
+        # Mock subprocess.check_call to track ekeyword calls
+        mock_subprocess = mocker.patch("subprocess.check_call")
+
+        pkg_data = {
+            "stable": {
+                "pkg": "microsoft-edge",
+                "version": [("141.0.3537.71", "r0")],
+                "stable": True,
+            }
+        }
+
+        def get_ebuild_version(ver_tuple):
+            return ver_tuple[0]
+
+        def get_prev_channel(channel):
+            return "beta"
+
+        bump_browser_package(
+            atom="www-client/microsoft-edge",
+            channel="stable",
+            uversion="141.0.3537.99",
+            tversion="141.0.3537.71",
+            major_bump=False,  # Same-channel bump, not a major bump
+            pkg_data=pkg_data,
+            ebuild_mgr=mock_ebuild_mgr,
+            repo_path=mock_repo_path,
+            dry_run=False,
+            logger=mock_logger,
+            get_ebuild_version_func=get_ebuild_version,
+            get_prev_channel_func=get_prev_channel,
+            enable_stabilisation=True,
+        )
+
+        # Verify ekeyword was NOT called (same-channel bump)
+        mock_subprocess.assert_not_called()
+
+        # Verify bump was still performed
+        mock_ebuild_mgr.bump_ebuild.assert_called_once()
+
+        # Verify debug log was emitted
+        debug_calls = [call for call in mock_logger.debug.call_args_list]
+        assert any(
+            "Skipping stabilisation for same-channel bump" in str(call)
+            for call in debug_calls
+        )

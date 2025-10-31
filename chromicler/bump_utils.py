@@ -135,7 +135,7 @@ def bump_browser_package(
     logger,
     get_ebuild_version_func,
     get_prev_channel_func,
-    enable_stabilization: bool = True,
+    enable_stabilisation: bool = True,
 ):
     """
     Generic browser package bump implementation for Edge/Opera/NewBrowserOfTheWeek.
@@ -145,7 +145,7 @@ def bump_browser_package(
     2. Set keywords (~amd64 for stable channel major bumps)
     3. Copy metadata.xml if major bump
     4. Perform the bump
-    5. Optionally stabilize (ekeyword amd64) for stable channel
+    5. Optionally stabilise (ekeyword amd64) for cross-channel promotions to stable
 
     Args:
         atom: Package atom (e.g., "www-client/microsoft-edge")
@@ -160,13 +160,16 @@ def bump_browser_package(
         logger: Logger instance
         get_ebuild_version_func: Function to convert version tuple to string
         get_prev_channel_func: Function to get previous channel
-        enable_stabilization: Whether to enable two-phase stabilization (default: True)
+        enable_stabilisation: Whether to enable two-phase stabilisation for
+                            cross-channel promotions (major bumps to stable).
+                            Same-channel bumps skip stabilisation as keywords
+                            are already correct. (default: True)
 
     Returns:
         None
 
     Raises:
-        Exception: If bump or stabilization fails
+        Exception: If bump or stabilisation fails
     """
     import shutil
     import subprocess
@@ -232,13 +235,41 @@ def bump_browser_package(
         logger.error("Failed to bump package", atom=atom, error=str(e))
         raise
 
-    # Stabilization phase for stable channel (two-phase workflow)
-    if enable_stabilization and pkg_data[channel]["stable"] and not dry_run:
+    # Stabilisation phase for stable channel (two-phase workflow)
+    #
+    # Stabilisation is needed when:
+    # 1. We're bumping the stable channel (pkg_data[channel]["stable"] == True)
+    # 2. It's a cross-channel promotion (major_bump == True)
+    # 3. Stabilisation is enabled and not a dry run
+    #
+    # Cross-channel promotions copy from beta (with ~amd64 keywords) and need
+    # ekeyword to change ~amd64 → amd64. Same-channel stable bumps already have
+    # the correct keywords from their source ebuild, so no action is needed.
+
+    is_stable_channel = pkg_data[channel]["stable"]
+    is_cross_channel_promotion = major_bump
+    should_stabilise = (
+        enable_stabilisation
+        and is_stable_channel
+        and is_cross_channel_promotion
+        and not dry_run
+    )
+
+    if should_stabilise:
         try:
+            prev_channel = get_prev_channel_func(channel)
+            logger.info(
+                "Stabilising keywords for cross-channel promotion",
+                atom=atom,
+                version=uversion,
+                source_channel=prev_channel,
+                target_channel=channel,
+            )
+
             pkg_dir = repo / category / pkg_name
             ebuild_file = pkg_dir / f"{pkg_name}-{uversion}.ebuild"
 
-            # Run ekeyword to stabilize
+            # Run ekeyword to stabilise
             subprocess.check_call(["ekeyword", "amd64", str(ebuild_file)])
             ebuild_mgr.repo.index.add([str(ebuild_file)])
 
@@ -254,14 +285,22 @@ def bump_browser_package(
             manifest_path = pkg_dir / "Manifest"
             ebuild_mgr.repo.index.add([str(manifest_path)])
 
-            # Commit stabilization
+            # Commit stabilisation
             ebuild_mgr.repo.git.commit(
                 "-m",
                 f"{atom}: amd64 stable ({uversion})",
                 "-s",
                 "-S",
             )
-            logger.info(f"Stabilized {atom} {uversion} to amd64")
+            logger.info(f"Stabilised {atom} {uversion} to amd64")
         except Exception as e:
-            logger.error(f"Failed to stabilize {atom}", error=str(e))
+            logger.error(f"Failed to stabilise {atom}", error=str(e))
             raise
+    elif enable_stabilisation and is_stable_channel and not is_cross_channel_promotion:
+        # Same-channel stable bump - keywords already correct from source ebuild
+        logger.debug(
+            "Skipping stabilisation for same-channel bump",
+            atom=atom,
+            version=uversion,
+            channel=channel,
+        )
