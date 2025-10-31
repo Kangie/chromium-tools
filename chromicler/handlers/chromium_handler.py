@@ -1385,11 +1385,21 @@ This bug was automatically created based on Chrome stable release information.
                     )
                     # Check existing bugs
                     existing_bugs = self.bugzilla.check_existing_bugs_for_cves(cves)
+                    # Use a set to collect unique bug URLs (multiple CVEs can map to same bug)
+                    unique_bug_urls = set()
                     for cve, bug_id in existing_bugs.items():
                         if bug_id:
                             bug_url = f"https://bugs.gentoo.org/{bug_id}"
-                            bug_urls.append(bug_url)
-                            self.logger.info(f"Linking bug for {cve}", url=bug_url)
+                            unique_bug_urls.add(bug_url)
+                            self.logger.info(f"Found bug for {cve}", bug_id=bug_id)
+
+                    # Convert to list and log unique bugs being linked
+                    bug_urls = list(unique_bug_urls)
+                    if bug_urls:
+                        self.logger.info(
+                            f"Linking {len(bug_urls)} unique bug(s) for {len(cves)} CVEs",
+                            bug_urls=bug_urls,
+                        )
             except Exception as e:
                 self.logger.warning("Failed to search for CVEs", error=str(e))
 
