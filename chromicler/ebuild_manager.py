@@ -180,7 +180,7 @@ class EbuildManager:
 
         # Determine source ebuild
         if source_atom and source_version:
-            # Copy from a different package (major bump scenario)
+            # Copy from specified source (may be same or different package)
             source_category, source_package = source_atom.split("/")
             source_pkg_dir = self.repo_path / source_category / source_package
             old_ebuild_path = (
@@ -191,11 +191,19 @@ class EbuildManager:
                     f"Source ebuild not found: {source_atom}-{source_version}"
                 )
             old_version = source_version
-            self.logger.info(
-                "Using cross-package source",
-                source_atom=source_atom,
-                source_version=source_version,
-            )
+
+            if source_atom == atom:
+                self.logger.info(
+                    "Bumping ebuild using same-package source",
+                    source_atom=source_atom,
+                    source_version=source_version,
+                )
+            else:
+                self.logger.info(
+                    "Using cross-package source",
+                    source_atom=source_atom,
+                    source_version=source_version,
+                )
         else:
             # Use latest version from same package
             versions = self.get_package_versions(atom)
